@@ -172,7 +172,7 @@ function pVip() {
   return shell("OG Founding VIP", `<div class="wdl-vip-hero"><p>Bad kids get the best seats. 🎓 These are the founding passes for the troublemakers who showed up first: a numbered OG badge, VIP flair, and priority on every pre-launch reservation and partner drop.</p></div>
   <div class="wdl-grid wdl-vip-grid">${cfg().VIP.map(vipCard).join("")}</div>
   <div class="wdl-card"><h3>How the credit works</h3><p>Every pass converts to Wine Detention gift credit: the price you pay <b>plus a fixed ${vipPct()}% bonus credit</b>. Same bonus for everyone, no spin, no chance. Credit never drops below what you paid.</p>
-  <p class="wdl-fine">Gift credit is not cash, can't be exchanged for cash (except where law requires), and isn't alcohol. Bonus credit is promotional and may expire 12 months after issue; paid value never expires. After checkout we email a VIP code; redeem it under Gifts → Redeem to unlock your numbered badge with a confetti reveal. Passes are paid by card through Whop.</p></div>${LEGAL}`, "Hall passes for the bad boys and bad girls of detention. Founding members only.");
+  <p class="wdl-fine">Gift credit is not cash, can't be exchanged for cash (except where law requires), and isn't alcohol. Bonus credit is promotional and may expire 12 months after issue; paid value never expires. After checkout we email a VIP code; redeem it under Gifts → Redeem to unlock your numbered badge with a confetti reveal. Passes are paid by card through Whop.</p></div>${LEGAL}`, "For the bad boys and bad girls of detention. Founding members only.");
 }
 export function vipHero() {
   const T = cfg().VIP; if (!T.length) return "";
