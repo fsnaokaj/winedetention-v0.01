@@ -196,10 +196,14 @@ function monthlyCard() { const m = cfg().MONTHLY; if (!m) return ""; return drop
 function wall() { setTimeout(async () => { const e = $("#wdl-wall"); if (!e) return; try { const w = (await api("wall")).wall; e.innerHTML = w.length ? w.map((p) => `<a class="wdl-who" href="#/u/${esc(p.handle)}">${av(p, 30)} #${p.vipNo} @${esc(p.handle)}</a>`).join(" ") : "<p>Be the first name on the wall.</p>"; } catch { e.innerHTML = "<p>Be the first name on the wall.</p>"; } }, 0);
   return `<div class="wdl-card"><h3>🏛️ Founders Wall</h3><div id="wdl-wall" class="wdl-row" style="gap:10px"><p>Loading…</p></div></div>`; }
 function pHome() {
+  const party = (W().partyHomeHTML && W().partyHomeHTML()) || `<a class="wdl-card" href="#/party"><h3>♪ Detention Radio</h3><p>Open the jukebox.</p></a>`;
+  const gifts = `<h2 class="wdl-h2">🎁 VIP gift cards</h2><div class="wdl-grid">${GIFTS.map((a) => `<div class="wdl-card wdl-gift"><div class="wdl-gc">WINE DETENTION<b>${money(a)}</b></div>${cfg().BONUS.pct ? `<p class="wdl-tag">+ ${money(a * cfg().BONUS.pct / 100)} bonus credit</p>` : ""}${buyBtn("gift-" + a, "Buy " + money(a))}</div>`).join("")}</div><p class="wdl-fine"><a href="#/gifts">Shop all gift cards →</a></p>`;
   return `<section class="wdl"><div class="wdl-homehero"><span class="wdl-tag">Whitelist · OG early access</span><h1>OG Founding VIP Drops</h1><p>Sealed mystery drops for the whales, whitelist and OGs who got here first. 🎁🎆</p>${ME ? "" : `<a class="wdl-btn ghost" href="#/login">Get on the whitelist</a>`}</div>
-  <a class="wdl-card wdl-radio" href="#/party" style="display:flex;gap:14px;align-items:center;text-decoration:none;margin:0 0 18px"><span style="font-size:36px" aria-hidden="true">♪</span><div><span class="wdl-tag">Detention Radio</span><h3 style="margin:4px 0">Superboy · First Person</h3><p class="wdl-fine">Tap play on the player, or open the full jukebox.</p></div><span class="wdl-btn ghost">Party</span></a>
-  <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>
-  <a class="wdl-card wdl-giftteaser" href="#/gifts"><h3>🎁 VIP gift cards</h3><p>$175 · $350 · $500 · $1,000, each with a fixed +10% bonus credit.</p><span class="wdl-btn ghost">Shop gift cards</span></a>${wall()}${LEGAL}</section>`;
+  <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}
+  <h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>
+  ${gifts}
+  <h2 class="wdl-h2">♪ Detention Radio</h2>${party}
+  ${wall()}${LEGAL}</section>`;
 }
 function pVip() {
   return shell("OG Founding VIP Drops", `<div class="wdl-vip-hero"><p>Sealed drops for the bad boys and bad girls who showed up first. 🎁🎆</p></div>
@@ -219,6 +223,7 @@ function pPolicy(k) {
   return shell(T[0], `<div class="wdl-card wdl-prose">${T[1]}</div>${LEGAL}`);
 }
 export function page(route) {
+  if (route === "/") return pHome();
   if (!OWN.test(route)) return null;
   if (route === "/login" || route === "/signup") return pLogin();
   if (route === "/account") return pAccount();
@@ -226,7 +231,6 @@ export function page(route) {
   if (route === "/spin") return pSpin();
   if (route === "/quests") return pQuests();
   if (route === "/leaderboard") return pBoard();
-  if (route === "/") return pHome();
   if (route === "/how-it-works") { setTimeout(() => location.replace("#/vip"), 0); return pVip(); }
   if (route === "/socials") return shell("Follow @winedetention", `<div class="wdl-card"><div class="wd-soc">${(window.WD_SOCIALS || []).map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener me" title="${esc(x.n)}" style="--c:${x.c}"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="${x.p}"/></svg></a>`).join("")}</div></div>`);
   if (route === "/collections" || route === "/partners" || route.startsWith("/product/")) { setTimeout(() => location.replace("#/vip"), 0); return pVip(); }
@@ -252,6 +256,7 @@ export function bind(route) {
   const rd = $("#wdl-redeem"); if (rd) rd.onsubmit = async (e) => { e.preventDefault(); try { const d = await api("redeem", { code: $("#wdl-gcode").value }); ME.credit = d.credit; if (d.tier) { ME.vip = d.tier; ME.vipNo = d.vipNo; } rerender(); reveal(d); } catch (er) { toast(errText(er)); } };
   if (route === "/login" || route === "/signup") bindLogin();
   if (route === "/spin") bindSpin();
+  if (route === "/" && W().bindParty) W().bindParty();
 }
 export function authBtn() {
   if (ME) return `<a href="#/account" class="account-link wdl-acct" title="@${esc(ME.handle)}">${av(ME, 34)}</a>`;

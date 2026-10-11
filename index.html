@@ -4314,7 +4314,8 @@
         '<div class="board" style="max-width:800px;">'+feed+'</div></section>'+
       '<section><div style="text-align:center;"><a class="btn btn-primary" href="#/party">Open the jukebox party</a></div></section>';
   }
-  function pageParty(){
+  function partyPlaylistHTML(opts){
+    opts = opts || {};
     var tr = findTrack(nowPlayingId);
     var rows = TRACKS.map(function(s,i){
       return '<div class="track-row'+(s.id===nowPlayingId?" playing":"")+'">'+
@@ -4331,25 +4332,7 @@
     var kq = karaokeQueue.map(function(k){
       return '<div class="feed-row"><span><b>'+esc(k.who)+'</b> — '+esc(k.song)+'</span></div>';
     }).join("");
-    return pageHero("DETENTION RADIO","The whole hall is one party.","Superboy (First Person) plus original house loops. Pay points to bump the jukebox. Grab the mic for karaoke livestream (demo).")+
-      '<section>'+
-        '<div class="play-head">'+
-          '<div class="play-art" aria-hidden="true"></div>'+
-          '<div>'+
-            '<div class="kicker" style="color:#fff;">NOW PLAYING · EVERYONE HEARS THIS</div>'+
-            '<h2>'+esc(tr.title)+'</h2>'+
-            '<p>'+esc(tr.artist)+' — '+esc(tr.album)+'</p>'+
-            '<div class="play-actions">'+
-              '<button class="btn btn-dark" type="button" id="play-prev">Previous</button>'+
-              '<button class="btn btn-primary" type="button" id="play-now">'+(musicOn?"Pause the party":"Play for the hall")+'</button>'+
-              '<button class="btn btn-dark" type="button" id="play-next">Next</button>'+
-              '<button class="btn btn-dark" type="button" data-req="'+tr.id+'">Bump this · 40 pts</button>'+
-            '</div>'+
-            '<p style="margin-top:10px;font-size:13px;opacity:.85;">'+ (tr.src ? "Playing the original Superboy cut." : "Browser-made house loop.") +' No licensed catalog.</p>'+
-          '</div>'+
-        '</div>'+
-        '<div class="track-list">'+rows+'</div>'+
-      '</section>'+
+    var karaoke = opts.compact ? '' :
       '<section class="why-alt">'+
         '<div class="section-head"><span class="kicker">KARAOKE LIVE</span><h2>Go on stage.</h2><p>Same energy as a live booth — you, a mic, the hall watching.</p></div>'+
         '<div class="stage">'+
@@ -4366,6 +4349,44 @@
           '<div class="prize"><h3>Karaoke queue</h3>'+kq+'</div>'+
         '</div>'+
       '</section>';
+    return '<section class="wd-party-block">'+
+        '<div class="play-head">'+
+          '<div class="play-art" aria-hidden="true"></div>'+
+          '<div>'+
+            '<div class="kicker" style="color:#fff;">NOW PLAYING · EVERYONE HEARS THIS</div>'+
+            '<h2>'+esc(tr.title)+'</h2>'+
+            '<p>'+esc(tr.artist)+' — '+esc(tr.album)+'</p>'+
+            '<div class="play-actions">'+
+              '<button class="btn btn-dark" type="button" id="play-prev">Previous</button>'+
+              '<button class="btn btn-primary" type="button" id="play-now">'+(musicOn?"Pause the party":"Play for the hall")+'</button>'+
+              '<button class="btn btn-dark" type="button" id="play-next">Next</button>'+
+              '<button class="btn btn-dark" type="button" data-req="'+tr.id+'">Bump this · 40 pts</button>'+
+            '</div>'+
+            '<p style="margin-top:10px;font-size:13px;opacity:.85;">'+ (tr.src ? "Playing the original Superboy cut." : "Browser-made house loop.") +' No licensed catalog. <a href="#/party" style="color:inherit;text-decoration:underline;">Full party →</a></p>'+
+          '</div>'+
+        '</div>'+
+        '<div class="track-list">'+rows+'</div>'+
+      '</section>'+karaoke;
+  }
+  function pageParty(){
+    return pageHero("DETENTION RADIO","The whole hall is one party.","Superboy (First Person) plus original house loops. Pay points to bump the jukebox. Grab the mic for karaoke livestream (demo).")+
+      partyPlaylistHTML({ compact: false });
+  }
+  function bindParty(){
+    var pn = document.getElementById("play-now");
+    if (pn) pn.addEventListener("click", toggleMusic);
+    var pprev = document.getElementById("play-prev");
+    var pnext = document.getElementById("play-next");
+    if (pprev) pprev.addEventListener("click", function(){ skipTrack(-1); });
+    if (pnext) pnext.addEventListener("click", function(){ skipTrack(1); });
+    document.querySelectorAll("[data-play]").forEach(function(btn){
+      btn.addEventListener("click", function(){ playTrack(btn.getAttribute("data-play")); });
+    });
+    document.querySelectorAll("[data-req]").forEach(function(btn){
+      btn.addEventListener("click", function(){ requestTrack(btn.getAttribute("data-req")); });
+    });
+    var st = document.getElementById("join-stage");
+    if (st) st.addEventListener("click", joinStage);
   }
   function pageTrade(){
     var lanes = LANES.map(function(l){
@@ -5093,22 +5114,7 @@
     if (route === "/account" || route.indexOf("/u/")===0){
       bindProfileEvents();
     }
-    if (route === "/party"){
-      var pn = document.getElementById("play-now");
-      if (pn) pn.addEventListener("click", toggleMusic);
-      var pprev = document.getElementById("play-prev");
-      var pnext = document.getElementById("play-next");
-      if (pprev) pprev.addEventListener("click", function(){ skipTrack(-1); });
-      if (pnext) pnext.addEventListener("click", function(){ skipTrack(1); });
-      document.querySelectorAll("[data-play]").forEach(function(btn){
-        btn.addEventListener("click", function(){ playTrack(btn.getAttribute("data-play")); });
-      });
-      document.querySelectorAll("[data-req]").forEach(function(btn){
-        btn.addEventListener("click", function(){ requestTrack(btn.getAttribute("data-req")); });
-      });
-      var st = document.getElementById("join-stage");
-      if (st) st.addEventListener("click", joinStage);
-    }
+    if (route === "/party" || route === "/"){ bindParty(); }
     if (route === "/contact"){
       var cform = document.getElementById("contact-form");
       if (cform) cform.addEventListener("submit", function(e){
@@ -5400,7 +5406,7 @@
     addPoints(0, "scroll");
   }, {passive:true});
 
-  window.WD = {render:render, navigate:navigate, toast:showToast, PRODUCTS:PRODUCTS, paintAuth:renderAuthBtn};
+  window.WD = {render:render, navigate:navigate, toast:showToast, PRODUCTS:PRODUCTS, paintAuth:renderAuthBtn, partyHomeHTML:function(){ return partyPlaylistHTML({ compact: true }); }, bindParty:bindParty};
   loadPrefs();
   applyPrefs();
   var ticker = document.getElementById("ticker-track");
