@@ -35,7 +35,7 @@ const rerender = () => W().render && W().render();
 
 /* ---------- offers (config + admin overrides) ---------- */
 const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], MONTHLY: o.VIP_MONTHLY || C.VIP_MONTHLY, MORE: o.MORE_DROPS || C.MORE_DROPS || [], BUNDLE: o.VIP_BUNDLE || C.VIP_BUNDLE, BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
-const GIFTS = [25, 50, 100, 250, 350];
+const GIFTS = [175, 350, 500, 1000];
 const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = ([...cfg().VIP, ...cfg().MORE, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
 function buyBtn(key, label) {
   const url = cfg().WHOP[key];
@@ -195,6 +195,11 @@ function bundleCard() { const b = cfg().BUNDLE; if (!b) return ""; const ends = 
 function monthlyCard() { const m = cfg().MONTHLY; if (!m) return ""; return dropCard(m, { per: "/month", badge: "📅 Monthly" }); }
 function wall() { setTimeout(async () => { const e = $("#wdl-wall"); if (!e) return; try { const w = (await api("wall")).wall; e.innerHTML = w.length ? w.map((p) => `<a class="wdl-who" href="#/u/${esc(p.handle)}">${av(p, 30)} #${p.vipNo} @${esc(p.handle)}</a>`).join(" ") : "<p>Be the first name on the wall.</p>"; } catch { e.innerHTML = "<p>Be the first name on the wall.</p>"; } }, 0);
   return `<div class="wdl-card"><h3>🏛️ Founders Wall</h3><div id="wdl-wall" class="wdl-row" style="gap:10px"><p>Loading…</p></div></div>`; }
+function pHome() {
+  return `<section class="wdl"><div class="wdl-homehero"><span class="wdl-tag">Whitelist · OG early access</span><h1>OG Founding VIP Drops</h1><p>Sealed mystery drops for the whales, whitelist and OGs who got here first. 🎁🎆</p>${ME ? "" : `<a class="wdl-btn ghost" href="#/login">Get on the whitelist</a>`}</div>
+  <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">Monthly drop</h2><div class="wdl-drops">${monthlyCard()}</div><h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>
+  <a class="wdl-card wdl-giftteaser" href="#/gifts"><h3>🎁 VIP gift cards</h3><p>$175 · $350 · $500 · $1,000, each with a fixed +10% bonus credit.</p><span class="wdl-btn ghost">Shop gift cards</span></a>${wall()}${LEGAL}</section>`;
+}
 function pVip() {
   return shell("OG Founding VIP Drops", `<div class="wdl-vip-hero"><p>Sealed drops for the bad boys and bad girls who showed up first. 🎁🎆</p></div>
   <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">Monthly drop</h2><div class="wdl-drops">${monthlyCard()}</div><h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>${wall()}${LEGAL}`);
@@ -220,8 +225,8 @@ export function page(route) {
   if (route === "/spin") return pSpin();
   if (route === "/quests") return pQuests();
   if (route === "/leaderboard") return pBoard();
-  if (route === "/collections" || route === "/partners") return pCollections();
-  if (route.startsWith("/product/")) return pProduct(route.slice(9));
+  if (route === "/") return pHome();
+  if (route === "/collections" || route === "/partners" || route.startsWith("/product/")) { setTimeout(() => location.replace("#/vip"), 0); return pVip(); }
   if (route === "/gifts/redeem") return pRedeem();
   if (route === "/vip") return pVip();
   if (route.startsWith("/gifts")) return pGifts();
@@ -229,7 +234,7 @@ export function page(route) {
   if (route.startsWith("/policy/")) return pPolicy(route.slice(8));
   return pSoon({ "/live": "Live rooms", "/party": "Party", "/trade": "Trades", "/giveaways": "Giveaways" }[route] || "Coming soon");
 }
-export const owns = (route) => OWN.test(route);
+export const owns = (route) => route === "/" || OWN.test(route);
 export function bind(route) {
   document.querySelectorAll(".wdl-notify[data-item]").forEach((f) => (f.onsubmit = async (e) => { e.preventDefault(); const i = f.querySelector("input"); try { await api("notify", { email: i.value, item: f.dataset.item }); f.innerHTML = "<p>You're on the list ✓</p>"; } catch (er) { toast(errText(er)); } }));
   document.querySelectorAll("[data-notify]").forEach((b) => (b.onclick = () => { b.outerHTML = notifyForm(b.dataset.notify); bind(route); }));

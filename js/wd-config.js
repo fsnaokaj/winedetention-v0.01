@@ -9,11 +9,10 @@
 window.WD_CONFIG = {
   /* Whop checkout links (https://whop.com/checkout/... or https://whop.com/<store>/<product>) */
   WHOP_LINKS: {
-    "gift-25": "",
-    "gift-50": "",
-    "gift-100": "",
-    "gift-250": "",
+    "gift-175": "",
     "gift-350": "",
+    "gift-500": "",
+    "gift-1000": "",
     "gift-custom": "",          // only if you create a pay-what-you-want product in Whop
     "founding-pass": "",        // Founding Member Pass (membership)
     "credit-bundle": "",        // Pre-launch credit bundle

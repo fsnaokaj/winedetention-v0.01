@@ -3812,7 +3812,6 @@
     var items = [
       {href:"#/", match:"/", kind:"home", label:t("navHome")},
       {href:"#/party", match:"/party", kind:"party", label:"Party"},
-      {href:"#/collections", match:"/collections", kind:"shop", label:"Shop"},
       {href:"#/gifts", match:"/gifts", kind:"gift", label:"Gifts"},
       {href:"#/live", match:"/live", kind:"live", label:t("navLive")},
       {href:"#/vip", match:"/vip", kind:"pass", label:"OG VIP"},
@@ -3864,7 +3863,7 @@
   }
   function renderPromoMast(){
     var r = currentRoute().split("?")[0];
-    var show = r==="/" || r==="/collections";
+    var show = false;
     document.body.classList.toggle("has-mast", show);
     var band = document.getElementById("mast-band");
     if (band) band.hidden = !show;
@@ -3892,7 +3891,7 @@
   }
   function hallReply(q){
     var s = String(q||"").toLowerCase();
-    if (/gift|bonus|unveil|card/.test(s)) return "Gift cards run $25–$350 and include a fixed +10% promotional bonus credit (not cash). Wine purchases happen at licensed partners."+giftFloorPct()+"%, hall average +"+giftAvgPct()+"%, rare jackpots to 18×. Demo only: no money moves.";
+    if (/gift|bonus|unveil|card/.test(s)) return "VIP gift cards run $175–$1,000 and include a fixed +10% promotional bonus credit (not cash). Wine purchases happen at licensed partners."+giftFloorPct()+"%, hall average +"+giftAvgPct()+"%, rare jackpots to 18×. Demo only: no money moves.";
     if (/music|jukebox|party|song|play|radio|superboy/.test(s)) return "The hall opens on Superboy (First Person). Skip into original Detention Radio loops, or open Party for the full jukebox.";
     if (/profile|follow|handle|@|tiktok|snap/.test(s)) return "Everyone gets a public @handle. Tap You — or open someone from the board. ";
     if (/login|account|sign|pass/.test(s)) return "Tap Log in in the header, or You in the rail. Sign up mints your @handle and member number.";
@@ -4058,7 +4057,7 @@
           '<li><a href="#/contact">'+t("footContact")+'</a></li>'+
         '</ul></div>'+
         '<div><h4>'+t("footShop")+'</h4><ul>'+
-          '<li><a href="#/collections">'+t("footAll")+'</a></li>'+
+          '<li><a href="#/vip">VIP drops</a></li>'+
           '<li><a href="#/gifts">Gift cards</a></li>'+
           '<li><a href="#/gifts/redeem">Redeem a gift</a></li>'+
           '<li><a href="#/giveaways">'+t("navGive")+'</a></li>'+
@@ -4073,7 +4072,7 @@
       '<div class="footer-socials"><h4>We\'re live on 18 apps</h4><div class="footer-socials-wrap">'+
         SOCIALS.map(function(s){ return '<a href="#/socials" class="'+(s.live?"live":"")+'">'+s.name+'</a>'; }).join("")+
       '</div></div>'+
-      '<div class="footer-feat"><a href="'+((window.WD_CONFIG&&WD_CONFIG.SUSHIBUTT_URL)||"https://sushibutt.com")+'" target="_blank" rel="noopener">🍣 Featured on SushiButt</a> · <a href="#/gifts">Gift cards</a> · <a href="#/collections">Partner offers</a> · <a href="#/leaderboard">Leaderboard</a></div>'+
+      '<div class="footer-feat"><a href="'+((window.WD_CONFIG&&WD_CONFIG.SUSHIBUTT_URL)||"https://sushibutt.com")+'" target="_blank" rel="noopener">🍣 Featured on SushiButt</a> · <a href="#/gifts">Gift cards</a> · <a href="#/vip">VIP drops</a> · <a href="#/leaderboard">Leaderboard</a></div>'+
       '<div class="footer-bottom"><span>'+t("footCopy")+'</span><span>'+t("footWines")+'</span></div>';
     var fb = document.getElementById("footer-brand");
     if (fb) fb.addEventListener("click", function(e){

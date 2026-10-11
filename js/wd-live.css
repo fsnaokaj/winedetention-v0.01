@@ -112,3 +112,8 @@ label.wdl-btn{cursor:pointer}
 .wdl-drop .wdl-cd{justify-content:center}
 .wdl-bundlewrap{max-width:520px;margin:6px auto 18px}
 @media(min-width:900px){.wdl-drops-main{grid-template-columns:1.12fr 1fr 1fr}}
+#ue-search{display:none!important}
+.wdl-homehero{text-align:center;padding:10px 6px 18px}
+.wdl-homehero h1{font-family:var(--font-bang,Anton,sans-serif);font-weight:400;font-size:clamp(36px,10vw,64px);color:#0E3386;margin:6px 0}
+.wdl-homehero p{font-size:17px;color:#4B5563;max-width:560px;margin:0 auto 10px}
+.wdl-giftteaser{text-align:center;margin-top:10px}
