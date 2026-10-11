@@ -1,8 +1,8 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/u/:h", "destination": "/index.html" },
-    { "source": "/:h([A-Za-z0-9_@]{3,21})", "destination": "/index.html" }
+    { "source": "/u/:h", "destination": "/" },
+    { "source": "/:h", "destination": "/" }
   ],
   "headers": [
     { "source": "/(.*)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" } ] },
