@@ -19,9 +19,9 @@ window.WD_CONFIG = {
     "credit-bundle": "",        // Pre-launch credit bundle
     "vip350": "",               // Founding Members: OG VIP Mystery Drop ($350)
     "vip888": "",               // Let's Pop: Champagne After Hours Special ($888)
-    "vip1750": "",              // The Private Reserve: Mancave Stash ($1,750)
+    "vip1750": "",              // The Private Reserve: Bougie Luxury Stash ($1,750)
     "vipMonthly": "",           // Founding Members Monthly ($36/month subscription)
-    "vipBundle": ""             // OG Flash Deal: All Three ($2,738 one-time)               // The Private Reserve: Mancave Stash ($1,750)
+    "vipBundle": ""             // OG Flash Deal: All Three ($2,738 one-time)               // The Private Reserve: Bougie Luxury Stash ($1,750)
   },
 
   /* OG Founding VIP passes. Credit = price + fixed 35% bonus credit (set server-side in api/_lib/rules.js). */
@@ -30,7 +30,7 @@ window.WD_CONFIG = {
   VIP_TIERS: [
     { key: "vip350", name: "Founding Members: OG VIP Mystery Drop", price: 350, emoji: "🎁", theme: "pass", popular: true, tagline: "Treat yourself. The one everybody grabs: unlock your mystery welcome drop and see what the hall has waiting for you.", perks: ["Mystery welcome reveal with confetti", "OG Founding VIP # badge", "VIP flair on your profile", "Priority pre-launch reservations", "First access to partner offers"] },
     { key: "vip888", name: "Let's Pop: Champagne After Hours Special", price: 888, emoji: "🍾", theme: "champagne", tagline: "Treat yourself to the after-party. Detention lets out late and the bubbles stay on.", perks: ["Everything in the Mystery Drop", "Champagne-gold VIP flair", "After-hours priority on pre-launch reservations", "First access to partner offers"] },
-    { key: "vip1750", name: "The Private Reserve: Mancave Stash", price: 1750, emoji: "🗝️", theme: "principal", tagline: "The over-the-top collector extra. A private reserve for the ones going all in: your stash, locked and labeled.", perks: ["Everything in Champagne After Hours", "Private Reserve collector flair", "First in line for every reservation", "First access to partner offers"] }
+    { key: "vip1750", name: "The Private Reserve: Bougie Luxury Stash", price: 1750, emoji: "🗝️", theme: "principal", tagline: "The over-the-top collector extra. A private reserve for the ones going all in: your stash, locked and labeled.", perks: ["Everything in Champagne After Hours", "Private Reserve collector flair", "First in line for every reservation", "First access to partner offers"] }
   ],
 
   /* Pre-launch offers sold through Whop (non-alcohol) */
