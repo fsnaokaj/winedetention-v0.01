@@ -74,3 +74,7 @@ img,svg,video{max-width:100%}
 .wdl-reveal.wdl-th-champagne .wdl-reveal-card{background:linear-gradient(160deg,#FFFDF5,#F6E7BE)}
 .wdl-reveal-card h2{font-family:var(--font-bang,Anton,sans-serif);color:#0E3386;font-weight:400;font-size:32px;margin:4px 0}
 @keyframes wdlpop{from{transform:scale(.6);opacity:0}}
+.wdl-pop{border-color:#CC3433!important;box-shadow:0 14px 34px rgba(204,52,51,.22)}
+.wdl-popular{position:absolute;top:12px;right:12px;background:#CC3433;color:#fff;font-weight:800;font-size:12px;padding:5px 10px;border-radius:999px}
+.wdl-pop .wdl-vip-top .wdl-tag{visibility:hidden}
+@media(min-width:900px){.wdl-vip-grid{grid-template-columns:1.15fr 1fr 1fr}}

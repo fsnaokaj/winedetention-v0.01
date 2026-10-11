@@ -119,7 +119,7 @@ function bindSpin() {
 function reveal(d) {
   const t = cfg().VIP.find((x) => x.key === d.tier);
   const o = document.createElement("div"); o.className = "wdl-reveal" + (t ? " wdl-th-" + t.theme : "");
-  o.innerHTML = `<div class="wdl-reveal-card">${t ? `<div class="wdl-vip-emoji">${esc(t.emoji)}</div><p class="wdl-tag">Welcome, OG Founding VIP #${d.vipNo}</p><h2>${esc(t.name)}</h2>` : `<h2>Gift credit added</h2>`}
+  o.innerHTML = `<div class="wdl-reveal-card">${t ? `<div class="wdl-vip-emoji">${esc(t.emoji)}</div><p class="wdl-tag">🎁 Mystery drop unlocked · OG Founding VIP #${d.vipNo}</p><h2>${esc(t.name)}</h2>` : `<h2>Gift credit added</h2>`}
   <p>${money(d.base)} paid</p>${d.bonus ? `<p class="wdl-big">+${money(d.bonus)}</p><p>bonus credit</p>` : ""}<p>Total: <b>${money(d.amount)}</b> gift credit</p><p class="wdl-fine">Credit is not cash.</p><button class="wdl-btn">Let's go</button></div>`;
   document.body.appendChild(o); o.querySelector("button").onclick = () => o.remove(); confetti(); setTimeout(confetti, 700); setTimeout(confetti, 1400);
 }
@@ -164,7 +164,7 @@ function pRedeem() {
 const vipPct = () => (SRV && SRV.vipBonusPct) || 35;
 function vipCard(t) {
   const credit = t.price * (1 + vipPct() / 100), url = cfg().WHOP[t.key];
-  return `<div class="wdl-card wdl-vip wdl-th-${esc(t.theme)}"><div class="wdl-vip-top"><span class="wdl-vip-emoji">${esc(t.emoji)}</span><span class="wdl-tag">OG Founding VIP</span></div><h3>${esc(t.name)}</h3><p class="wdl-vip-tag">${esc(t.tagline)}</p>
+  return `<div class="wdl-card wdl-vip wdl-th-${esc(t.theme)}${t.popular ? " wdl-pop" : ""}">${t.popular ? `<span class="wdl-popular">★ Most popular</span>` : ""}<div class="wdl-vip-top"><span class="wdl-vip-emoji">${esc(t.emoji)}</span><span class="wdl-tag">OG Founding VIP</span></div><h3>${esc(t.name)}</h3><p class="wdl-vip-tag">${esc(t.tagline)}</p>
   <div class="wdl-vip-price">${money(t.price)}</div><p class="wdl-vip-credit">= <b>${money(credit)}</b> gift credit <small>(${money(t.price)} + ${vipPct()}% bonus credit)</small></p>
   <ul>${t.perks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">Get the ${esc(t.name)}</a>` : `<p class="wdl-fine"><b>Reserve your pass</b> — checkout opens soon.</p>${notifyForm("vip:" + t.key)}`}</div>`;
 }
@@ -176,7 +176,7 @@ function pVip() {
 }
 export function vipHero() {
   const T = cfg().VIP; if (!T.length) return "";
-  return `<a class="wdl-vip-banner" href="#/vip"><span class="wdl-tag">New · OG Founding VIP</span><b>Hall passes for the bad kids 🎟️🍾🔔</b><span>${T.map((t) => `${esc(t.name)} ${money(t.price)}`).join(" · ")}</span><span class="wdl-fine">Get price + ${vipPct()}% in gift credit, a numbered OG badge and first access.</span><span class="wdl-btn">See the passes</span></a>`;
+  return `<a class="wdl-vip-banner" href="#/vip"><span class="wdl-tag">New · OG Founding VIP</span><b>🎁 The OG VIP Mystery Welcome Drop is here</b><span>Most popular: $350 Mystery Welcome Drop · also Let's Pop $888 · Treat Yo'self $1,750</span><span class="wdl-fine">Get price + ${vipPct()}% in gift credit, a numbered OG badge and first access.</span><span class="wdl-btn">See the passes</span></a>`;
 }
 function pCart() { return shell("No cart, no wine sales here", `<div class="wdl-card"><p>Wine Detention doesn't sell alcohol directly. Shop lockers at licensed partners, or pick up a gift card.</p><a class="wdl-btn" href="#/collections">Partner offers</a> <a class="wdl-btn ghost" href="#/gifts">Gift cards</a></div>${LEGAL}`); }
 function pSoon(name) { return shell(name, `<div class="wdl-card"><h3>Opening after launch</h3><p>Live rooms, parties, trades and giveaways open once the hall has real members. Get notified first.</p>${notifyForm("community")}</div>`); }
