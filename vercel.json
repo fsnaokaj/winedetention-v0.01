@@ -29,5 +29,11 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/wd.js": {
+      "includeFiles": "api/_lib/fonts/**",
+      "memory": 1024
+    }
+  }
 }
