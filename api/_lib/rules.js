@@ -17,7 +17,7 @@ export const RESERVED = new Set(["admin", "api", "u", "gifts", "login", "signup"
 /* OG Founding VIP passes. Credit = price + FIXED bonus (no chance element on a paid purchase). Credit is not cash. */
 export const VIP_BONUS_PCT = 35;
 export const VIP = {
-  vip350: { name: "OG VIP Mystery Welcome Drop", price: 350 },
+  vip350: { name: "Founding Members: OG VIP Mystery Drop", price: 350 },
   vip888: { name: "Let's Pop: Champagne After Hours Special", price: 888 },
   vip1750: { name: "Treat Yo'self: The Lavish Pour", price: 1750 },
 };

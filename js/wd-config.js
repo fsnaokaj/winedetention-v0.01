@@ -17,15 +17,15 @@ window.WD_CONFIG = {
     "gift-custom": "",          // only if you create a pay-what-you-want product in Whop
     "founding-pass": "",        // Founding Member Pass (membership)
     "credit-bundle": "",        // Pre-launch credit bundle
-    "vip350": "",               // OG VIP Mystery Welcome Drop ($350)
+    "vip350": "",               // Founding Members: OG VIP Mystery Drop ($350)
     "vip888": "",               // Let's Pop: Champagne After Hours Special ($888)
     "vip1750": ""               // Treat Yo'self: The Lavish Pour ($1,750)
   },
 
   /* OG Founding VIP passes. Credit = price + fixed 35% bonus credit (set server-side in api/_lib/rules.js). */
   VIP_TIERS: [
-    { key: "vip350", name: "OG VIP Mystery Welcome Drop", price: 350, emoji: "🎁", theme: "pass", popular: true, tagline: "The one everybody grabs. Unlock your mystery welcome drop and find out what the hall has waiting for you.", perks: ["Mystery welcome reveal with confetti", "OG Founding VIP # badge", "VIP flair on your profile", "Priority pre-launch reservations", "First access to partner offers"] },
-    { key: "vip888", name: "Let's Pop: Champagne After Hours Special", price: 888, emoji: "🍾", theme: "champagne", tagline: "Detention lets out late. The bubbles stay on.", perks: ["Everything in the Welcome Drop", "Champagne-gold VIP flair", "After-hours priority on pre-launch reservations", "First access to partner offers"] },
+    { key: "vip350", name: "Founding Members: OG VIP Mystery Drop", price: 350, emoji: "🎁", theme: "pass", popular: true, tagline: "The one everybody grabs. Unlock your mystery welcome drop and find out what the hall has waiting for you.", perks: ["Mystery welcome reveal with confetti", "OG Founding VIP # badge", "VIP flair on your profile", "Priority pre-launch reservations", "First access to partner offers"] },
+    { key: "vip888", name: "Let's Pop: Champagne After Hours Special", price: 888, emoji: "🍾", theme: "champagne", tagline: "Detention lets out late. The bubbles stay on.", perks: ["Everything in the Mystery Drop", "Champagne-gold VIP flair", "After-hours priority on pre-launch reservations", "First access to partner offers"] },
     { key: "vip1750", name: "Treat Yo'self: The Lavish Pour", price: 1750, emoji: "🥂", theme: "principal", tagline: "Live lavish. Don't cheat yourself. You earned the big pour.", perks: ["Everything in Champagne After Hours", "Top-tier Lavish Pour flair", "First in line for every reservation", "First access to partner offers"] }
   ],
 

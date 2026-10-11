@@ -176,7 +176,7 @@ function pVip() {
 }
 export function vipHero() {
   const T = cfg().VIP; if (!T.length) return "";
-  return `<a class="wdl-vip-banner" href="#/vip"><span class="wdl-tag">New · OG Founding VIP</span><b>🎁 The OG VIP Mystery Welcome Drop is here</b><span>Most popular: $350 Mystery Welcome Drop · also Let's Pop $888 · Treat Yo'self $1,750</span><span class="wdl-fine">Get price + ${vipPct()}% in gift credit, a numbered OG badge and first access.</span><span class="wdl-btn">See the passes</span></a>`;
+  return `<a class="wdl-vip-banner" href="#/vip"><span class="wdl-tag">New · OG Founding VIP</span><b>🎁 The Founding Members: OG VIP Mystery Drop is here</b><span>Most popular: $350 Founding Members Mystery Drop · also Let's Pop $888 · Treat Yo'self $1,750</span><span class="wdl-fine">Get price + ${vipPct()}% in gift credit, a numbered OG badge and first access.</span><span class="wdl-btn">See the passes</span></a>`;
 }
 function pCart() { return shell("No cart, no wine sales here", `<div class="wdl-card"><p>Wine Detention doesn't sell alcohol directly. Shop lockers at licensed partners, or pick up a gift card.</p><a class="wdl-btn" href="#/collections">Partner offers</a> <a class="wdl-btn ghost" href="#/gifts">Gift cards</a></div>${LEGAL}`); }
 function pSoon(name) { return shell(name, `<div class="wdl-card"><h3>Opening after launch</h3><p>Live rooms, parties, trades and giveaways open once the hall has real members. Get notified first.</p>${notifyForm("community")}</div>`); }
