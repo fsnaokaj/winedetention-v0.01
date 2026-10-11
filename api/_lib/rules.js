@@ -22,8 +22,8 @@ export const VIP = {
   vip888: { name: "Let's Pop: Champagne After Hours Special", price: 888 },
   vip1750: { name: "The Private Reserve: Bougie Luxury Stash", price: 1750 },
   vip1313: { name: "The Private Reserve: Principal's Pour", price: 1313 },
-  vip2500: { name: "The Rich Reserve: Permanent Record", price: 2500 },
-  vip3500: { name: "The Private Reserve: Penthouse Pour", price: 3500 },
+  vip2500: { name: "The Private Reserve: Penthouse Pour", price: 2500 },
+  vip3500: { name: "The Rich Reserve: Permanent Record", price: 3500 },
   vip5000: { name: "The Royal Reserve: Drunk Tank Deluxe", price: 5000 },
   vipBundle: { name: "OG Flash Deal: All Three", price: 2738, list: 2988, credit: 4033.8, bundle: true },
 };

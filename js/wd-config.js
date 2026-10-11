@@ -23,8 +23,8 @@ window.WD_CONFIG = {
     "vipMonthly": "",           // Founding Members Monthly ($36/month subscription)
     "vipBundle": "",            // OG Flash Deal: All Three
     "vip1313": "",              // The Private Reserve: Principal's Pour ($1,313)
-    "vip2500": "",              // The Rich Reserve: Permanent Record ($2,500)
-    "vip3500": "",              // The Private Reserve: Penthouse Pour ($3,500)
+    "vip2500": "",              // The Private Reserve: Penthouse Pour ($2,500)
+    "vip3500": "",              // The Rich Reserve: Permanent Record ($3,500)
     "vip5000": ""               // The Royal Reserve: Drunk Tank Deluxe ($5,000)             // OG Flash Deal: All Three ($2,738 one-time)               // The Private Reserve: Bougie Luxury Stash ($1,750)
   },
 
@@ -33,8 +33,8 @@ window.WD_CONFIG = {
   VIP_BUNDLE: { key: "vipBundle", name: "OG Flash Deal: All Three", price: 2738, list: 2988, credit: 4033.80, emoji: "⚡", perks: ["All three passes at once", "$4,033.80 total gift credit", "Top VIP number range (#1–#100)", "Your name on the Founders Wall", "Everything in every pass, Private Reserve included"] },
   MORE_DROPS: [
     { key: "vip1313", name: "The Private Reserve: Principal's Pour", price: 1313, emoji: "🔔", theme: "principal", tagline: "Called to the office, on purpose. A collector pour with a lucky 13 for the hall's favorite troublemakers.", perks: ["OG Founding VIP # badge", "Principal's Pour collector flair", "Priority pre-launch reservations", "First access to partner offers"] },
-    { key: "vip2500", name: "The Rich Reserve: Permanent Record", price: 2500, emoji: "📜", theme: "champagne", tagline: "Some things go on your permanent record. This one you'll want framed.", perks: ["Everything in the Private Reserve passes", "Permanent Record collector flair", "Front-of-line reservations", "First access to partner offers"] },
-    { key: "vip3500", name: "The Private Reserve: Penthouse Pour", price: 3500, emoji: "🏙️", theme: "champagne", tagline: "Top-floor views, top-shelf collector status. The penthouse of the Private Reserve.", perks: ["Penthouse Pour collector flair", "Royal-adjacent VIP badge", "Front-of-line reservations", "First access to partner offers"] },
+    { key: "vip2500", name: "The Private Reserve: Penthouse Pour", price: 2500, emoji: "🏙️", theme: "champagne", tagline: "Top-floor views, top-shelf collector status. The penthouse of the Private Reserve.", perks: ["Penthouse Pour collector flair", "Royal-adjacent VIP badge", "Front-of-line reservations", "First access to partner offers"] },
+    { key: "vip3500", name: "The Rich Reserve: Permanent Record", price: 3500, emoji: "📜", theme: "champagne", tagline: "Some things go on your permanent record. This one you'll want framed.", perks: ["Everything in the Private Reserve passes", "Permanent Record collector flair", "Front-of-line reservations", "First access to partner offers"] },
     { key: "vip5000", name: "The Royal Reserve: Drunk Tank Deluxe", price: 5000, emoji: "👑", theme: "principal", tagline: "The royal joke of the hall: the only tank that's all velvet ropes and good company. Collect it, frame it, sip slowly.", perks: ["Our top collector flair", "Royal Reserve VIP badge", "Very first access to every reservation and partner offer", "Pace yourself: drink responsibly, 21+"] }
   ],
   VIP_TIERS: [
