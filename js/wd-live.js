@@ -17,6 +17,10 @@ export function avatar(seed, size = 48) {
   return `<svg class="wdl-av" viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><rect width="100" height="100" rx="50" fill="hsl(${hue} 85% 92%)"/><path d="M28 24h44q2 30-22 38-24-8-22-38z" fill="#fff" stroke="#0E3386" stroke-width="3"/><path d="M30 34h40q-2 22-20 27-18-5-20-27z" fill="${wine}"/>${E}${M}<path d="M50 62v18M38 82h24" stroke="#0E3386" stroke-width="4" stroke-linecap="round"/></svg>`;
 }
 
+const COVERS = ["linear-gradient(135deg,#FFE3E3,#E3ECFF)", "linear-gradient(135deg,#FFF6DA,#F6E3B4)", "linear-gradient(135deg,#E8F7EE,#D8ECFF)", "linear-gradient(135deg,#FCE7F3,#FFE4E6)", "linear-gradient(135deg,#EDE9FE,#FCE7F3)", "linear-gradient(135deg,#E0F2FE,#F0FDFA)", "linear-gradient(135deg,#FEF3C7,#FFE4E6)", "linear-gradient(135deg,#F3F6FF,#FFFFFF)", "repeating-linear-gradient(45deg,#FFF1F2 0 18px,#FFE4E6 18px 36px)", "repeating-linear-gradient(90deg,#EEF2FF 0 22px,#E0E7FF 22px 44px)", "radial-gradient(circle at 20% 30%,#FDE68A,transparent 40%),radial-gradient(circle at 80% 60%,#FBCFE8,transparent 45%),#FFFBEB", "radial-gradient(circle at 30% 70%,#C7D2FE,transparent 45%),radial-gradient(circle at 75% 25%,#FECACA,transparent 40%),#F8FAFC"];
+const coverCss = (c) => COVERS[+c || 0] || COVERS[0];
+const av = (p, size = 48) => p && +p.hasAv ? `<img class="wdl-av" src="/api/wd?a=av&h=${encodeURIComponent(p.handle)}&v=${p.hasAv}" width="${size}" height="${size}" alt="" style="object-fit:cover">` : avatar((p && p.avSeed) || "x", size);
+function resizeImg(file) { return new Promise((ok, no) => { const img = new Image(); img.onload = () => { const c = document.createElement("canvas"), S = 256, m = Math.min(img.width, img.height); c.width = c.height = S; c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S); let q = .85, d; do { d = c.toDataURL("image/jpeg", q); q -= .1; } while (d.length > 68000 && q > .3); ok(d); }; img.onerror = no; img.src = URL.createObjectURL(file); }); }
 /* ---------- API ---------- */
 async function api(a, body, get) {
   const headers = { "Content-Type": "application/json" }; if (client && client.token) headers.Authorization = "Bearer " + client.token;
@@ -46,9 +50,9 @@ async function bootAuth() {
   try { OV = (await api("offers")).overrides; } catch {}
   if (!SRV.dynamicEnvId || !SRV.store) { authState = "soon"; authMsg = SRV.dynamicEnvId ? "Accounts database not configured yet." : "Sign-in not configured yet."; rerender(); return; }
   try {
-    const [core, evm, sol] = await Promise.all([import(`https://esm.sh/@dynamic-labs-sdk/client@${V}`), import(`https://esm.sh/@dynamic-labs-sdk/evm@${V}`).catch(() => null), import(`https://esm.sh/@dynamic-labs-sdk/solana@${V}`).catch(() => null)]);
+    const [core, evm] = await Promise.all([import(`https://esm.sh/@dynamic-labs-sdk/client@${V}`), import(`https://esm.sh/@dynamic-labs-sdk/evm@${V}`).catch(() => null)]);
     D = core; client = D.createDynamicClient({ autoInitialize: false, environmentId: SRV.dynamicEnvId, metadata: { name: "Wine Detention", universalLink: location.origin } });
-    evm && evm.addEvmExtension && evm.addEvmExtension(); sol && sol.addSolanaExtension && sol.addSolanaExtension();
+    evm && evm.addEvmExtension && evm.addEvmExtension();
     await D.initializeClient(); authState = "ready";
     if (D.isSignedIn()) await loadMe();
   } catch (e) { authState = "error"; authMsg = String((e && e.message) || e); console.warn("Dynamic init failed", e); }
@@ -68,7 +72,7 @@ const needLogin = (what) => authState === "soon" ? `<div class="wdl-card"><h3>Ac
 const notifyForm = (item) => `<form class="wdl-notify" data-item="${esc(item)}"><input type="email" required placeholder="you@email.com" aria-label="Email"><button class="wdl-btn">Notify me</button></form>`;
 
 function pLogin() {
-  if (ME) return shell("You're in", `<div class="wdl-card wdl-center">${avatar(ME.avSeed, 88)}<h3>@${esc(ME.handle)}</h3><p>Member #${ME.member}</p><a class="wdl-btn" href="#/account">My account</a> <button class="wdl-btn ghost" data-logout>Log out</button></div>`);
+  if (ME) return shell("You're in", `<div class="wdl-card wdl-center">${av(ME, 88)}<h3>@${esc(ME.handle)}</h3><p>Member #${ME.member}</p><a class="wdl-btn" href="#/account">My account</a> <button class="wdl-btn ghost" data-logout>Log out</button></div>`);
   if (authState === "soon") return shell("Accounts opening soon", needLogin("your hall pass"));
   if (authState === "loading") return shell("Sign in", `<div class="wdl-card"><p>Loading sign-in…</p></div>`);
   if (authState === "error") return shell("Sign in", `<div class="wdl-card"><h3>Sign-in is having trouble</h3><p class="wdl-fine">${esc(authMsg)}</p>${notifyForm("accounts")}</div>`);
@@ -92,15 +96,15 @@ function bindLogin() {
 }
 function pAccount() {
   if (!ME) return shell("My account", needLogin("your account"));
-  return shell("My account", `<div class="wdl-card wdl-pro">${avatar(ME.avSeed, 96)}<div><h3>${esc(ME.displayName || "@" + ME.handle)}</h3><p>@${esc(ME.handle)} · Member #${ME.member}</p>${vipFlair(ME)}<p><b>${ME.points.toLocaleString()}</b> hall points · <b>${money(ME.credit)}</b> gift credit</p>
-    <div class="wdl-row"><button class="wdl-btn ghost" data-reroll="avatar">🎲 New avatar</button><button class="wdl-btn ghost" data-reroll="handle">🎲 Random handle</button><button class="wdl-btn ghost" data-share>Share my link</button><button class="wdl-btn ghost" data-logout>Log out</button></div></div></div>
-   <form class="wdl-card wdl-form" id="wdl-prof"><h3>Edit profile</h3><label>Display name<input name="displayName" maxlength="32" value="${esc(ME.displayName)}"></label><label>City<input name="city" maxlength="40" value="${esc(ME.city)}"></label><label>Bio<textarea name="bio" maxlength="160">${esc(ME.bio)}</textarea></label><label>Handle<input name="handle" maxlength="20" value="${esc(ME.handle)}" pattern="[a-z0-9_]{3,20}"></label><button class="wdl-btn">Save</button></form>
+  return shell("My account", `<div class="wdl-cover" style="background:${coverCss(ME.cover)}"></div><div class="wdl-card wdl-pro wdl-pro-top">${av(ME, 96)}<div><h3>${esc(ME.displayName || "@" + ME.handle)}</h3><p>@${esc(ME.handle)} · Member #${ME.member}</p>${vipFlair(ME)}<p><b>${ME.points.toLocaleString()}</b> hall points · <b>${money(ME.credit)}</b> gift credit</p>
+    <div class="wdl-row"><button class="wdl-btn ghost" data-reroll="avatar">🎲 New avatar</button><button class="wdl-btn ghost" data-reroll="handle">🎲 Random handle</button><button class="wdl-btn ghost" data-share>Share my link</button><a class="wdl-btn ghost" href="/api/wd?a=card&h=${esc(ME.handle)}&v=${esc(ME.avSeed)}${ME.hasAv}" target="_blank" rel="noopener">My share card</a><label class="wdl-btn ghost">📷 Upload photo<input type="file" accept="image/*" id="wdl-up" hidden></label><button class="wdl-btn ghost" data-logout>Log out</button></div></div></div>
+   <div class="wdl-card"><h3>Invite friends</h3><p>Your link: <b>${esc(location.host)}/${esc(ME.handle)}</b>. Friends get +500 pts, you get +1,000 pts per signup. Joined so far: <b>${ME.refs || 0}</b>.</p></div><form class="wdl-card wdl-form" id="wdl-prof"><h3>Edit profile</h3><div class="wdl-covers">${COVERS.map((c, i) => `<label style="background:${c}"><input type="radio" name="cover" value="${i}" ${String(ME.cover || 0) === String(i) ? "checked" : ""}><span></span></label>`).join("")}</div><label>Display name<input name="displayName" maxlength="32" value="${esc(ME.displayName)}"></label><label>City<input name="city" maxlength="40" value="${esc(ME.city)}"></label><label>Bio<textarea name="bio" maxlength="160">${esc(ME.bio)}</textarea></label><label>Handle<input name="handle" maxlength="20" value="${esc(ME.handle)}" pattern="[a-z0-9_]{3,20}"></label><button class="wdl-btn">Save</button></form>
    <div class="wdl-grid3"><a class="wdl-card" href="#/spin"><h3>🎡 Welcome Spin</h3><p>${ME.welcome == null ? "Ready to spin" : "Won " + (+ME.welcome).toLocaleString() + " pts"}</p></a><a class="wdl-card" href="#/quests"><h3>✅ Daily quests</h3><p>Free points every day</p></a><a class="wdl-card" href="#/gifts/redeem"><h3>🎁 Redeem a code</h3><p>Add gift credit</p></a></div>`);
 }
 function pProfile(h) {
   h = h.toLowerCase().replace(/^@/, "");
   setTimeout(async () => { const box = $("#wdl-pub"); if (!box) return; try { const p = (await api("profile", undefined, "&h=" + encodeURIComponent(h))).profile;
-    box.innerHTML = `<div class="wdl-card wdl-pro">${avatar(p.avSeed, 96)}<div><h3>${esc(p.displayName || "@" + p.handle)}</h3><p>@${esc(p.handle)} · Member #${p.member}${p.city ? " · " + esc(p.city) : ""}</p>${vipFlair(p)}<p>${esc(p.bio)}</p><p><b>${p.points.toLocaleString()}</b> hall points</p>${ME ? "" : `<a class="wdl-btn" href="#/login" data-ref="${esc(p.handle)}">Join Wine Detention</a>`}</div></div>`; }
+    box.innerHTML = `<div class="wdl-cover" style="background:${coverCss(p.cover)}"></div><div class="wdl-card wdl-pro wdl-pro-top">${av(p, 96)}<div><h3>${esc(p.displayName || "@" + p.handle)}</h3><p>@${esc(p.handle)} · Member #${p.member}${p.city ? " · " + esc(p.city) : ""}</p>${vipFlair(p)}<p>${esc(p.bio)}</p><p><b>${p.points.toLocaleString()}</b> hall points</p>${ME ? "" : `<a class="wdl-btn" href="#/login" data-ref="${esc(p.handle)}">Join with @${esc(p.handle)}\'s link</a>`}<button class="wdl-btn ghost" data-sharep="${esc(p.handle)}">Share</button></div></div>`; }
     catch (e) { box.innerHTML = `<div class="wdl-card"><p>${e.status === 404 ? "No member with that handle." : esc(errText(e))}</p></div>`; } }, 0);
   return shell("@" + esc(h), `<div id="wdl-pub"><div class="wdl-card"><p>Loading…</p></div></div>`);
 }
@@ -130,7 +134,7 @@ function pQuests() {
 }
 function pBoard() {
   setTimeout(async () => { const box = $("#wdl-lb"); if (!box) return; try { const d = await api("lb");
-    box.innerHTML = d.board.length ? `<table class="wdl-table"><tr><th>#</th><th>Member</th><th>Points</th></tr>${d.board.map((p, i) => `<tr><td>${i + 1}</td><td><a href="#/u/${esc(p.handle)}" class="wdl-who">${avatar(p.avSeed, 28)} @${esc(p.handle)}</a></td><td>${p.points.toLocaleString()}</td></tr>`).join("")}</table>` : "<p>No members yet. Be the first.</p>"; }
+    box.innerHTML = d.board.length ? `<table class="wdl-table"><tr><th>#</th><th>Member</th><th>Points</th></tr>${d.board.map((p, i) => `<tr><td>${i + 1}</td><td><a href="#/u/${esc(p.handle)}" class="wdl-who">${av(p, 28)} @${esc(p.handle)}${p.vip ? " ⭐" : ""}</a></td><td>${p.points.toLocaleString()}</td></tr>`).join("")}</table>` : "<p>No members yet. Be the first.</p>"; }
     catch (e) { box.innerHTML = `<p>${esc(errText(e))}</p>`; } }, 0);
   return shell("Leaderboard", `<div class="wdl-card" id="wdl-lb"><p>Loading…</p></div><p class="wdl-fine">Real members only. Points are free and for fun.</p>`);
 }
@@ -183,7 +187,7 @@ function bundleCard() { const b = cfg().BUNDLE; if (!b) return ""; const ends = 
 function monthlyCard() { const m = cfg().MONTHLY; if (!m) return ""; const c = m.price * (1 + vipPct() / 100);
   return `<div class="wdl-card wdl-monthly"><span class="wdl-vip-emoji">${esc(m.emoji)}</span><h3>${esc(m.name)}</h3><div class="wdl-vip-price">${money(m.price)}<small>/month</small></div><p class="wdl-vip-credit">= <b>${money(c)}</b> gift credit every month</p>
   <ul>${m.perks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${buyOr(m.key, "Start monthly")}<p class="wdl-fine">Billed monthly by Whop. Cancel anytime; credit already issued stays yours.</p></div>`; }
-function wall() { setTimeout(async () => { const e = $("#wdl-wall"); if (!e) return; try { const w = (await api("wall")).wall; e.innerHTML = w.length ? w.map((p) => `<a class="wdl-who" href="#/u/${esc(p.handle)}">${avatar(p.avSeed, 30)} #${p.vipNo} @${esc(p.handle)}</a>`).join(" ") : "<p>Be the first name on the wall.</p>"; } catch { e.innerHTML = "<p>Be the first name on the wall.</p>"; } }, 0);
+function wall() { setTimeout(async () => { const e = $("#wdl-wall"); if (!e) return; try { const w = (await api("wall")).wall; e.innerHTML = w.length ? w.map((p) => `<a class="wdl-who" href="#/u/${esc(p.handle)}">${av(p, 30)} #${p.vipNo} @${esc(p.handle)}</a>`).join(" ") : "<p>Be the first name on the wall.</p>"; } catch { e.innerHTML = "<p>Be the first name on the wall.</p>"; } }, 0);
   return `<div class="wdl-card"><h3>🏛️ Founders Wall</h3><div id="wdl-wall" class="wdl-row" style="gap:10px"><p>Loading…</p></div></div>`; }
 function pVip() {
   return shell("OG Founding VIP", `<div class="wdl-vip-hero"><p>Bad kids get the best seats. 🎓 These are the founding passes for the troublemakers who showed up first: a numbered OG badge, VIP flair, and priority on every pre-launch reservation and partner drop.</p></div>
@@ -228,13 +232,15 @@ export function bind(route) {
   document.querySelectorAll("[data-share]").forEach((b) => (b.onclick = () => { const u = location.origin + "/" + ME.handle; navigator.share ? navigator.share({ title: "@" + ME.handle + " on Wine Detention", url: u }).catch(() => {}) : navigator.clipboard.writeText(u).then(() => toast("Link copied: " + u)); }));
   document.querySelectorAll("[data-reroll]").forEach((b) => (b.onclick = async () => { try { ME = (await api("reroll", { what: b.dataset.reroll })).me; rerender(); W().paintAuth && W().paintAuth(); } catch (e) { toast(errText(e)); } }));
   document.querySelectorAll("[data-quest]").forEach((b) => (b.onclick = async () => { try { const d = await api("quest", { id: b.dataset.quest }); DONE[b.dataset.quest] = 1; ME.points = d.points; toast("+" + d.reward + " pts"); if (b.dataset.quest === "share" && ME) { const u = location.origin + "/" + ME.handle; navigator.share ? navigator.share({ url: u }).catch(() => {}) : navigator.clipboard && navigator.clipboard.writeText(u); } if (b.dataset.href) location.hash = b.dataset.href; else rerender(); } catch (e) { toast(errText(e)); } }));
-  const pf = $("#wdl-prof"); if (pf) pf.onsubmit = async (e) => { e.preventDefault(); const f = new FormData(pf); try { ME = (await api("profile", { displayName: f.get("displayName"), bio: f.get("bio"), city: f.get("city") })).me; const nh = String(f.get("handle") || "").toLowerCase(); if (nh && nh !== ME.handle) ME = (await api("reroll", { handle: nh })).me; toast("Saved"); rerender(); } catch (er) { toast(errText(er)); } };
+  const up = $("#wdl-up"); if (up) up.onchange = async () => { const f = up.files[0]; if (!f) return; try { const d = await resizeImg(f); ME = (await api("avatar", { dataUrl: d })).me; toast("Photo updated"); rerender(); W().paintAuth && W().paintAuth(); } catch (e) { toast(errText(e)); } };
+  document.querySelectorAll("[data-sharep]").forEach((b) => (b.onclick = () => { const u = location.origin + "/" + b.dataset.sharep; navigator.share ? navigator.share({ url: u }).catch(() => {}) : navigator.clipboard.writeText(u).then(() => toast("Link copied")); }));
+  const pf = $("#wdl-prof"); if (pf) pf.onsubmit = async (e) => { e.preventDefault(); const f = new FormData(pf); try { ME = (await api("profile", { displayName: f.get("displayName"), bio: f.get("bio"), city: f.get("city"), cover: f.get("cover") || "0" })).me; const nh = String(f.get("handle") || "").toLowerCase(); if (nh && nh !== ME.handle) ME = (await api("reroll", { handle: nh })).me; toast("Saved"); rerender(); } catch (er) { toast(errText(er)); } };
   const rd = $("#wdl-redeem"); if (rd) rd.onsubmit = async (e) => { e.preventDefault(); try { const d = await api("redeem", { code: $("#wdl-gcode").value }); ME.credit = d.credit; if (d.tier) { ME.vip = d.tier; ME.vipNo = d.vipNo; } rerender(); reveal(d); } catch (er) { toast(errText(er)); } };
   if (route === "/login" || route === "/signup") bindLogin();
   if (route === "/spin") bindSpin();
 }
 export function authBtn() {
-  if (ME) return `<a href="#/account" class="account-link wdl-acct" title="@${esc(ME.handle)}">${avatar(ME.avSeed, 34)}</a>`;
+  if (ME) return `<a href="#/account" class="account-link wdl-acct" title="@${esc(ME.handle)}">${av(ME, 34)}</a>`;
   return `<a href="#/login" class="login-link">${authState === "soon" ? "Join list" : "Log in"}</a>`;
 }
 window.WDL = { page, owns, bind, authBtn, avatar, vipHero };

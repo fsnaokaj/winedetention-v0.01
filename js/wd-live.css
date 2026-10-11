@@ -85,3 +85,11 @@ img,svg,video{max-width:100%}
 .wdl-cd b{display:block;font-family:var(--font-bang,Anton,sans-serif);font-size:26px;color:#0E3386;font-weight:400}
 .wdl-monthly{border:2px solid #B9C7EE;background:linear-gradient(180deg,#fff,#F3F6FF)}
 .wdl-vip-price small{font-size:18px;color:#73747B}
+.wdl-cover{height:120px;border-radius:18px 18px 0 0;margin-bottom:-48px;border:1px solid #E8E8EA}
+.wdl-pro-top{position:relative;border-radius:0 0 18px 18px;padding-top:12px}
+.wdl-pro-top>.wdl-av,.wdl-pro-top>img{border:4px solid #fff;box-shadow:0 4px 12px rgba(14,51,134,.15);margin-top:-8px}
+.wdl-covers{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}
+.wdl-covers label{height:38px;border-radius:10px;border:2px solid #E8E8EA;cursor:pointer;margin:0;position:relative}
+.wdl-covers input{position:absolute;opacity:0}
+.wdl-covers input:checked+span{position:absolute;inset:-2px;border:3px solid #CC3433;border-radius:10px}
+label.wdl-btn{cursor:pointer}

@@ -29,3 +29,4 @@ export const VIP = {
 };
 export const VIP_RANK = ["vipMonthly", "vip350", "vip888", "vip1313", "vip1750", "vipBundle", "vip2500", "vip3500", "vip5000"];
 export const BUNDLE_RANGE = 100; // bundle buyers get VIP #1-#100; everyone else starts at #101
+export const REFERRAL = { inviter: 1000, invitee: 500 };

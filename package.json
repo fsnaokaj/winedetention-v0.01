@@ -2,6 +2,11 @@
   "name": "winedetention",
   "private": true,
   "type": "module",
-  "dependencies": { "jose": "^6.1.0" },
-  "engines": { "node": ">=18" }
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "jose": "^6.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }

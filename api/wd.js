@@ -7,6 +7,8 @@ import { r, pipe, obj, redisConfig } from "./_lib/redis.js";
 import { verify, ENV_ID } from "./_lib/auth.js";
 import * as R from "./_lib/rules.js";
 import { randomBytes } from "crypto";
+import { cardPng, injectMeta } from "./_lib/card.js";
+const AV_MAX = 70000, COVERS = 12;
 
 const E = (m, s = 400) => Object.assign(new Error(m), { status: s });
 const U = (sub) => `wd:u:${sub}`;
@@ -14,7 +16,7 @@ const clean = (v, n) => String(v ?? "").replace(/[\u0000-\u001f<>]/g, "").trim()
 const day = () => new Date(Date.now() - 7 * 3600e3).toISOString().slice(0, 10); // Phoenix day
 const safeEq = (a, b) => { a = String(a || ""); b = String(b || ""); if (!a || !b || a.length !== b.length) return false; let x = 0; for (let i = 0; i < a.length; i++) x |= a.charCodeAt(i) ^ b.charCodeAt(i); return x === 0; };
 const need = () => { if (!redisConfig()) throw E("store_not_configured", 503); };
-function pub(h) { return { member: +h.member || 0, handle: h.handle, displayName: h.displayName || "", bio: h.bio || "", city: h.city || "", avSeed: h.avSeed || h.handle, points: +h.points || 0, credit: +h.credit || 0, createdAt: +h.createdAt || 0, welcome: h.welcome ? +h.welcome : null, vip: h.vip || "", vipNo: +h.vipNo || 0 }; }
+function pub(h) { return { member: +h.member || 0, handle: h.handle, displayName: h.displayName || "", bio: h.bio || "", city: h.city || "", avSeed: h.avSeed || h.handle, points: +h.points || 0, credit: +h.credit || 0, createdAt: +h.createdAt || 0, welcome: h.welcome ? +h.welcome : null, vip: h.vip || "", vipNo: +h.vipNo || 0, hasAv: h.hasAv ? +h.hasAv : 0, cover: h.cover || "0", refs: +h.refs || 0 }; }
 async function award(sub, pts) { const [p] = await pipe([["HINCRBY", U(sub), "points", pts], ["ZINCRBY", "wd:lb", pts, sub]]); return +p; }
 async function body(req) { if (req.body && typeof req.body === "object") return req.body; try { return JSON.parse(req.body || "{}"); } catch { return {}; } }
 async function freeHandle() { for (let i = 0; i < 30; i++) { const h = R.randomHandle(); if (!R.RESERVED.has(h) && !(await r("EXISTS", "wd:h:" + h))) return h; } return "hall" + Date.now().toString(36); }
@@ -26,11 +28,12 @@ async function me(sub, email, ref) {
   const member = await r("INCR", "wd:members");
   h = { handle, member, avSeed: handle + ":" + member, points: 0, credit: 0, createdAt: Date.now(), email: clean(email, 120), ref: clean(ref, 20).toLowerCase() };
   await pipe([["HSET", U(sub), ...Object.entries(h).flat()], ["ZADD", "wd:lb", 0, sub], ["ZADD", "wd:signups", Date.now(), sub]]);
+  if (h.ref && R.HANDLE_RE.test(h.ref)) { const inv = await r("GET", "wd:h:" + h.ref); if (inv && inv !== sub) { await award(inv, R.REFERRAL.inviter); await r("HINCRBY", U(inv), "refs", 1); h.points = await award(sub, R.REFERRAL.invitee); } }
   return h;
 }
 const lbList = async (n = 50) => {
   const z = await r("ZREVRANGE", "wd:lb", 0, n - 1, "WITHSCORES"); const out = [];
-  for (let i = 0; i < z.length; i += 2) { const h = obj(await r("HGETALL", U(z[i]))); if (h.handle) out.push({ handle: h.handle, displayName: h.displayName || "", avSeed: h.avSeed, member: +h.member, points: +z[i + 1] }); }
+  for (let i = 0; i < z.length; i += 2) { const h = obj(await r("HGETALL", U(z[i]))); if (h.handle) out.push({ handle: h.handle, displayName: h.displayName || "", avSeed: h.avSeed, hasAv: +h.hasAv || 0, vip: h.vip || "", vipNo: +h.vipNo || 0, member: +h.member, points: +z[i + 1] }); }
   return out;
 };
 async function offers() { const o = await r("GET", "wd:offers").catch(() => null); try { return o ? JSON.parse(o) : null; } catch { return null; } }
@@ -41,9 +44,21 @@ export default async function handler(req, res) {
   try {
     if (a === "config") return res.status(200).json({ ok: true, vip: R.VIP, vipBonusPct: R.VIP_BONUS_PCT, dynamicEnvId: ENV_ID() || null, store: !!redisConfig(), welcome: R.WELCOME, quests: R.QUESTS });
     if (a === "offers") return res.status(200).json({ ok: true, overrides: redisConfig() ? await offers() : null });
-    if (a === "wall") { need(); const z = await r("ZRANGE", "wd:wall", 0, 199); const out = []; for (const sb of z) { const h = obj(await r("HGETALL", U(sb))); if (h.handle) out.push({ handle: h.handle, displayName: h.displayName || "", avSeed: h.avSeed, vipNo: +h.vipNo }); } return res.status(200).json({ ok: true, wall: out }); }
+    if (a === "wall") { need(); const z = await r("ZRANGE", "wd:wall", 0, 199); const out = []; for (const sb of z) { const h = obj(await r("HGETALL", U(sb))); if (h.handle) out.push({ handle: h.handle, displayName: h.displayName || "", avSeed: h.avSeed, hasAv: +h.hasAv || 0, vipNo: +h.vipNo }); } return res.status(200).json({ ok: true, wall: out }); }
+    if (a === "av" || a === "card" || a === "page") {
+      const hd = String(req.query.h || "").toLowerCase().replace(/^@/, ""); const ok = R.HANDLE_RE.test(hd) && !R.RESERVED.has(hd);
+      const sub = ok && redisConfig() ? await r("GET", "wd:h:" + hd).catch(() => null) : null;
+      const host = String(req.headers["x-forwarded-host"] || req.headers.host || "winedetention.com"), origin = "https://" + host;
+      if (a === "av") { const d = sub ? await r("GET", "wd:av:" + sub) : null; if (!d) { res.setHeader("Location", "/favicon.svg"); return res.status(302).end(); } const m = d.match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/); res.setHeader("Content-Type", m[1]); res.setHeader("Cache-Control", "public, max-age=300"); return res.status(200).send(Buffer.from(m[2], "base64")); }
+      const h = sub ? obj(await r("HGETALL", U(sub))) : null;
+      if (a === "card") { if (!h) { res.setHeader("Location", "/og-image.png"); return res.status(302).end(); } const avatar = h.hasAv ? await r("GET", "wd:av:" + sub) : ""; const vipName = h.vip && R.VIP[h.vip] ? R.VIP[h.vip].name : "";
+        const png = await cardPng({ handle: h.handle, member: h.member, avSeed: h.avSeed, avatar, vipName, vipNo: h.vipNo, host: host.replace(/^www\./, "") }); res.setHeader("Content-Type", "image/png"); res.setHeader("Cache-Control", "public, max-age=300, s-maxage=600"); return res.status(200).send(png); }
+      let html = await (await fetch(origin + "/", { headers: { "x-shell": "1" } })).text();
+      if (h) html = injectMeta(html, { title: `@${h.handle} on Wine Detention`, description: `Member #${h.member}${h.vip && R.VIP[h.vip] ? " · OG Founding VIP #" + h.vipNo : ""}. Join with my link for a free Welcome Spin. 21+.`, url: `${origin}/${h.handle}`, image: `${origin}/api/wd?a=card&h=${h.handle}&v=${h.avSeed}` });
+      res.setHeader("Content-Type", "text/html; charset=utf-8"); res.setHeader("Cache-Control", "public, max-age=60"); return res.status(200).send(html);
+    }
     if (a === "lb") { need(); return res.status(200).json({ ok: true, board: await lbList(), members: +(await r("GET", "wd:members")) || 0 }); }
-    if (a === "profile") { need(); const hd = String(req.query.h || "").toLowerCase().replace(/^@/, ""); if (!R.HANDLE_RE.test(hd)) throw E("not_found", 404); const sub = await r("GET", "wd:h:" + hd); if (!sub) throw E("not_found", 404); const p = pub(obj(await r("HGETALL", U(sub)))); delete p.credit; delete p.welcome; return res.status(200).json({ ok: true, profile: p }); }
+    if (a === "profile" && req.method !== "POST") { need(); const hd = String(req.query.h || "").toLowerCase().replace(/^@/, ""); if (!R.HANDLE_RE.test(hd)) throw E("not_found", 404); const sub = await r("GET", "wd:h:" + hd); if (!sub) throw E("not_found", 404); const p = pub(obj(await r("HGETALL", U(sub)))); delete p.credit; delete p.welcome; return res.status(200).json({ ok: true, profile: p }); }
     if (req.method !== "POST") throw E("method", 405);
     const b = await body(req);
     if (a === "notify") {
@@ -76,7 +91,7 @@ export default async function handler(req, res) {
     const h = await me(sub, tok.email || (tok.verified_credentials || []).find?.((c) => c.email)?.email, b.ref);
     if (a === "me") return res.status(200).json({ ok: true, me: pub(h), done: obj(await r("HGETALL", `wd:q:${sub}:${day()}`)) });
     if (a === "reroll") {
-      if (b.what === "avatar") { const s = h.handle + ":" + randomBytes(3).toString("hex"); await r("HSET", U(sub), "avSeed", s); h.avSeed = s; }
+      if (b.what === "avatar") { const s = h.handle + ":" + randomBytes(3).toString("hex"); await pipe([["HSET", U(sub), "avSeed", s, "hasAv", 0], ["DEL", "wd:av:" + sub]]); h.avSeed = s; h.hasAv = 0; }
       else if (b.what === "handle" || b.handle) {
         let nh = b.handle ? String(b.handle).toLowerCase().replace(/^@/, "") : await freeHandle();
         if (!R.HANDLE_RE.test(nh) || R.RESERVED.has(nh)) throw E("bad_handle");
@@ -84,7 +99,12 @@ export default async function handler(req, res) {
       }
       return res.status(200).json({ ok: true, me: pub(h) });
     }
-    if (a === "profile") { const f = { displayName: clean(b.displayName, 32), bio: clean(b.bio, 160), city: clean(b.city, 40) }; await r("HSET", U(sub), ...Object.entries(f).flat()); Object.assign(h, f); return res.status(200).json({ ok: true, me: pub(h) }); }
+    if (a === "avatar") {
+      if (b.clear) { await pipe([["DEL", "wd:av:" + sub], ["HSET", U(sub), "hasAv", 0]]); h.hasAv = 0; return res.status(200).json({ ok: true, me: pub(h) }); }
+      const d = String(b.dataUrl || ""); if (!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(d) || d.length > AV_MAX) throw E("bad_image");
+      const v = Date.now(); await pipe([["SET", "wd:av:" + sub, d], ["HSET", U(sub), "hasAv", v]]); h.hasAv = v; return res.status(200).json({ ok: true, me: pub(h) });
+    }
+    if (a === "profile") { const f = { displayName: clean(b.displayName, 32), bio: clean(b.bio, 160), city: clean(b.city, 40) }; if (b.cover != null) { const c = String(b.cover); if (!/^\d{1,2}$/.test(c) || +c >= COVERS) throw E("bad_cover"); f.cover = c; } await r("HSET", U(sub), ...Object.entries(f).flat()); Object.assign(h, f); return res.status(200).json({ ok: true, me: pub(h) }); }
     if (a === "spin") {
       if (!(await r("HSETNX", U(sub), "welcome", -1))) throw E("already_spun", 409);
       const i = R.pick(R.WELCOME), v = R.WELCOME[i].v; await r("HSET", U(sub), "welcome", v); const pts = await award(sub, v);
