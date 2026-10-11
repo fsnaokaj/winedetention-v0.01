@@ -176,7 +176,7 @@ function flashEnd() { // next Sunday 11:59:59 PM Arizona (UTC-7, no DST); rolls 
 function cd() { let ms = Math.max(0, flashEnd() - Date.now()); const D = Math.floor(ms / 864e5); ms -= D * 864e5; const H = Math.floor(ms / 36e5); ms -= H * 36e5; const M = Math.floor(ms / 6e4); const S = Math.floor((ms - M * 6e4) / 1e3); return [D, H, M, S].map((n, i) => `<span><b>${String(n).padStart(2, "0")}</b>${["days", "hrs", "min", "sec"][i]}</span>`).join(""); }
 setInterval(() => { const e = document.getElementById("wdl-cd"); if (e) e.innerHTML = cd(); }, 1000);
 function bundleCard() { const b = cfg().BUNDLE; if (!b) return ""; const ends = new Date(flashEnd()).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/Phoenix" });
-  return `<div class="wdl-card wdl-bundle"><span class="wdl-popular">${esc(b.emoji)} Flash deal</span><h3>${esc(b.name)}</h3><p>All three passes in one go. Live lavish, save big.</p>
+  return `<div class="wdl-card wdl-bundle"><span class="wdl-popular">${esc(b.emoji)} Flash deal</span><h3>${esc(b.name)}</h3><p>Treat yourself to the Mystery Drop and Champagne After Hours, then go all in with the Private Reserve stash. All three at once, one flash price.</p>
   <div class="wdl-vip-price"><s>${money(b.list)}</s> ${money(b.price)}</div><p class="wdl-tag">Save ${money(b.list - b.price)}</p><p class="wdl-vip-credit">= <b>${money(b.credit)}</b> total gift credit <small>(all three passes incl. fixed 35% bonus)</small></p>
   <div class="wdl-cd" id="wdl-cd">${cd()}</div><p class="wdl-fine">This week's flash price ends ${ends}, 11:59 PM Arizona time.</p>
   <ul>${b.perks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${buyOr(b.key, "Grab all three")}</div>`; }
@@ -193,7 +193,7 @@ function pVip() {
 }
 export function vipHero() {
   const T = cfg().VIP; if (!T.length) return "";
-  return `<a class="wdl-vip-banner" href="#/vip"><span class="wdl-tag">New · OG Founding VIP</span><b>🎁 The Founding Members: OG VIP Mystery Drop is here</b><span>Most popular: $350 Founding Members Mystery Drop · also Let's Pop $888 · Treat Yo'self $1,750</span><span class="wdl-fine">Get price + ${vipPct()}% in gift credit, a numbered OG badge and first access.</span><span class="wdl-btn">See the passes</span></a>`;
+  return `<a class="wdl-vip-banner" href="#/vip"><span class="wdl-tag">New · OG Founding VIP</span><b>🎁 The Founding Members: OG VIP Mystery Drop is here</b><span>Most popular: $350 Founding Members Mystery Drop · treat yourself to Let's Pop $888 · or go all in with The Private Reserve $1,750</span><span class="wdl-fine">Get price + ${vipPct()}% in gift credit, a numbered OG badge and first access.</span><span class="wdl-btn">See the passes</span></a>`;
 }
 function pCart() { return shell("No cart, no wine sales here", `<div class="wdl-card"><p>Wine Detention doesn't sell alcohol directly. Shop lockers at licensed partners, or pick up a gift card.</p><a class="wdl-btn" href="#/collections">Partner offers</a> <a class="wdl-btn ghost" href="#/gifts">Gift cards</a></div>${LEGAL}`); }
 function pSoon(name) { return shell(name, `<div class="wdl-card"><h3>Opening after launch</h3><p>Live rooms, parties, trades and giveaways open once the hall has real members. Get notified first.</p>${notifyForm("community")}</div>`); }

@@ -20,7 +20,7 @@ export const VIP = {
   vipMonthly: { name: "Founding Members Monthly", price: 36, monthly: true },
   vip350: { name: "Founding Members: OG VIP Mystery Drop", price: 350 },
   vip888: { name: "Let's Pop: Champagne After Hours Special", price: 888 },
-  vip1750: { name: "Treat Yo'self: The Lavish Pour", price: 1750 },
+  vip1750: { name: "The Private Reserve: Mancave Stash", price: 1750 },
   vipBundle: { name: "OG Flash Deal: All Three", price: 2738, list: 2988, credit: 4033.8, bundle: true },
 };
 export const VIP_RANK = ["vipMonthly", "vip350", "vip888", "vip1750", "vipBundle"];
