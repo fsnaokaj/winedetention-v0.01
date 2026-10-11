@@ -23,6 +23,7 @@
 <meta name="twitter:image" content="https://winedetention.com/og-image.png">
 <link rel="stylesheet" href="/js/wd-live.css">
 <script src="/js/wd-config.js"></script>
+<script src="/js/wd-socials.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -4069,10 +4070,9 @@
           '<li><a href="#/policy/terms">'+t("footTerms")+'</a></li>'+
         '</ul></div>'+
       '</div>'+
-      '<div class="footer-socials"><h4>We\'re live on 18 apps</h4><div class="footer-socials-wrap">'+
-        SOCIALS.map(function(s){ return '<a href="#/socials" class="'+(s.live?"live":"")+'">'+s.name+'</a>'; }).join("")+
+      '<div class="footer-socials"><h4>Follow @winedetention</h4><div class="wd-soc">'+
+        (window.WD_SOCIALS||[]).map(function(x){ return '<a href="'+x.u+'" target="_blank" rel="noopener me" aria-label="'+x.n+'" title="'+x.n+'" style="--c:'+x.c+'"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="'+x.p+'"/></svg></a>'; }).join("")+
       '</div></div>'+
-      '<div class="footer-feat"><a href="'+((window.WD_CONFIG&&WD_CONFIG.SUSHIBUTT_URL)||"https://sushibutt.com")+'" target="_blank" rel="noopener">🍣 Featured on SushiButt</a> · <a href="#/gifts">Gift cards</a> · <a href="#/vip">VIP drops</a> · <a href="#/leaderboard">Leaderboard</a></div>'+
       '<div class="footer-bottom"><span>'+t("footCopy")+'</span><span>'+t("footWines")+'</span></div>';
     var fb = document.getElementById("footer-brand");
     if (fb) fb.addEventListener("click", function(e){
