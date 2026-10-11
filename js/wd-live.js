@@ -5,7 +5,7 @@ const W = () => window.WD || {};
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, "");
 const $ = (s) => document.querySelector(s);
-const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|policy\/(privacy|terms)|partners|u\/.+|live|party|trade|giveaways)$/;
+const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|policy\/(privacy|terms)|partners|u\/.+|live|party|trade|giveaways|socials|how-it-works)$/;
 let SRV = null, D = null, client = null, ME = null, DONE = {}, OV = null, authState = "loading", authMsg = "";
 
 /* ---------- avatars (deterministic cartoon wine glass) ---------- */
@@ -226,6 +226,8 @@ export function page(route) {
   if (route === "/quests") return pQuests();
   if (route === "/leaderboard") return pBoard();
   if (route === "/") return pHome();
+  if (route === "/how-it-works") { setTimeout(() => location.replace("#/vip"), 0); return pVip(); }
+  if (route === "/socials") return shell("Follow @winedetention", `<div class="wdl-card"><div class="wd-soc">${(window.WD_SOCIALS || []).map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener me" title="${esc(x.n)}" style="--c:${x.c}"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="${x.p}"/></svg></a>`).join("")}</div></div>`);
   if (route === "/collections" || route === "/partners" || route.startsWith("/product/")) { setTimeout(() => location.replace("#/vip"), 0); return pVip(); }
   if (route === "/gifts/redeem") return pRedeem();
   if (route === "/vip") return pVip();
