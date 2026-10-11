@@ -41,6 +41,7 @@ export default async function handler(req, res) {
   try {
     if (a === "config") return res.status(200).json({ ok: true, vip: R.VIP, vipBonusPct: R.VIP_BONUS_PCT, dynamicEnvId: ENV_ID() || null, store: !!redisConfig(), welcome: R.WELCOME, quests: R.QUESTS });
     if (a === "offers") return res.status(200).json({ ok: true, overrides: redisConfig() ? await offers() : null });
+    if (a === "wall") { need(); const z = await r("ZRANGE", "wd:wall", 0, 199); const out = []; for (const sb of z) { const h = obj(await r("HGETALL", U(sb))); if (h.handle) out.push({ handle: h.handle, displayName: h.displayName || "", avSeed: h.avSeed, vipNo: +h.vipNo }); } return res.status(200).json({ ok: true, wall: out }); }
     if (a === "lb") { need(); return res.status(200).json({ ok: true, board: await lbList(), members: +(await r("GET", "wd:members")) || 0 }); }
     if (a === "profile") { need(); const hd = String(req.query.h || "").toLowerCase().replace(/^@/, ""); if (!R.HANDLE_RE.test(hd)) throw E("not_found", 404); const sub = await r("GET", "wd:h:" + hd); if (!sub) throw E("not_found", 404); const p = pub(obj(await r("HGETALL", U(sub)))); delete p.credit; delete p.welcome; return res.status(200).json({ ok: true, profile: p }); }
     if (req.method !== "POST") throw E("method", 405);
@@ -63,7 +64,7 @@ export default async function handler(req, res) {
       if (op === "issue") {
         const tier = b.tier && R.VIP[b.tier] ? b.tier : "";
         const base = tier ? R.VIP[tier].price : Math.round(Number(b.amount) * 100) / 100; if (!(base > 0 && base <= 5000)) throw E("bad_amount");
-        const bonus = tier ? Math.round(base * R.VIP_BONUS_PCT) / 100 : 0, amount = Math.round((base + bonus) * 100) / 100;
+        const bonus = tier ? (R.VIP[tier].credit ? Math.round((R.VIP[tier].credit - base) * 100) / 100 : Math.round(base * R.VIP_BONUS_PCT) / 100) : 0, amount = Math.round((base + bonus) * 100) / 100;
         const code = "WD-" + randomBytes(6).toString("hex").toUpperCase().replace(/(.{4})(.{4})(.{4})/, "$1-$2-$3");
         await r("HSET", "wd:codes", code, JSON.stringify({ amount, base, bonus, tier, note: clean(b.note, 120), at: Date.now(), redeemedBy: null }));
         return res.status(200).json({ ok: true, code, amount, base, bonus, tier });
@@ -101,7 +102,11 @@ export default async function handler(req, res) {
       c.redeemedBy = h.handle; c.redeemedAt = Date.now(); await r("HSET", "wd:codes", code, JSON.stringify(c));
       const credit = await r("HINCRBYFLOAT", U(sub), "credit", c.amount);
       let vipNo = +h.vipNo || 0;
-      if (c.tier && R.VIP[c.tier]) { if (!vipNo) { vipNo = await r("INCR", "wd:vip"); await r("HSET", U(sub), "vipNo", vipNo); } const rank = Object.keys(R.VIP); if (!h.vip || rank.indexOf(c.tier) > rank.indexOf(h.vip)) await r("HSET", U(sub), "vip", c.tier); await r("ZADD", "wd:vips", Date.now(), sub); }
+      if (c.tier && R.VIP[c.tier]) { const isB = !!R.VIP[c.tier].bundle;
+        if (isB && (!vipNo || vipNo > R.BUNDLE_RANGE)) { const n = await r("INCR", "wd:vipb"); if (n <= R.BUNDLE_RANGE) { vipNo = n; await r("HSET", U(sub), "vipNo", vipNo); } }
+        if (!vipNo) { vipNo = R.BUNDLE_RANGE + (await r("INCR", "wd:vip")); await r("HSET", U(sub), "vipNo", vipNo); }
+        const rank = R.VIP_RANK; if (!h.vip || rank.indexOf(c.tier) > rank.indexOf(h.vip)) await r("HSET", U(sub), "vip", c.tier);
+        await r("ZADD", "wd:vips", Date.now(), sub); if (isB) await r("ZADD", "wd:wall", Date.now(), sub); }
       return res.status(200).json({ ok: true, amount: c.amount, base: c.base || c.amount, bonus: c.bonus || 0, tier: c.tier || "", vipNo, credit: +credit });
     }
     throw E("bad_action", 404);

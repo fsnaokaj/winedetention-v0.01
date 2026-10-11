@@ -19,10 +19,14 @@ window.WD_CONFIG = {
     "credit-bundle": "",        // Pre-launch credit bundle
     "vip350": "",               // Founding Members: OG VIP Mystery Drop ($350)
     "vip888": "",               // Let's Pop: Champagne After Hours Special ($888)
-    "vip1750": ""               // Treat Yo'self: The Lavish Pour ($1,750)
+    "vip1750": "",              // Treat Yo'self ($1,750)
+    "vipMonthly": "",           // Founding Members Monthly ($36/month subscription)
+    "vipBundle": ""             // OG Flash Deal: All Three ($2,738 one-time)               // Treat Yo'self: The Lavish Pour ($1,750)
   },
 
   /* OG Founding VIP passes. Credit = price + fixed 35% bonus credit (set server-side in api/_lib/rules.js). */
+  VIP_MONTHLY: { key: "vipMonthly", name: "Founding Members Monthly", price: 36, emoji: "📅", perks: ["$36 + 35% bonus = $48.60 gift credit every month", "OG Founding VIP # badge", "Member perks and early drops", "Cancel anytime"] },
+  VIP_BUNDLE: { key: "vipBundle", name: "OG Flash Deal: All Three", price: 2738, list: 2988, credit: 4033.80, emoji: "⚡", perks: ["All three passes at once", "$4,033.80 total gift credit", "Top VIP number range (#1–#100)", "Your name on the Founders Wall", "Everything in every pass"] },
   VIP_TIERS: [
     { key: "vip350", name: "Founding Members: OG VIP Mystery Drop", price: 350, emoji: "🎁", theme: "pass", popular: true, tagline: "The one everybody grabs. Unlock your mystery welcome drop and find out what the hall has waiting for you.", perks: ["Mystery welcome reveal with confetti", "OG Founding VIP # badge", "VIP flair on your profile", "Priority pre-launch reservations", "First access to partner offers"] },
     { key: "vip888", name: "Let's Pop: Champagne After Hours Special", price: 888, emoji: "🍾", theme: "champagne", tagline: "Detention lets out late. The bubbles stay on.", perks: ["Everything in the Mystery Drop", "Champagne-gold VIP flair", "After-hours priority on pre-launch reservations", "First access to partner offers"] },

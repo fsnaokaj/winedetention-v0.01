@@ -30,9 +30,9 @@ const toast = (m) => (W().toast ? W().toast(m) : alert(m));
 const rerender = () => W().render && W().render();
 
 /* ---------- offers (config + admin overrides) ---------- */
-const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
+const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], MONTHLY: o.VIP_MONTHLY || C.VIP_MONTHLY, BUNDLE: o.VIP_BUNDLE || C.VIP_BUNDLE, BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
 const GIFTS = [25, 50, 100, 250, 350];
-const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = (cfg().VIP.find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
+const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = ([...cfg().VIP, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
 function buyBtn(key, label) {
   const url = cfg().WHOP[key];
   return url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">${esc(label || "Buy with card")}</a>` : `<button class="wdl-btn ghost" data-notify="${esc(key)}">Notify me</button>`;
@@ -117,7 +117,7 @@ function bindSpin() {
     catch (e) { clearInterval(t); reel.textContent = "🎡"; toast(errText(e)); b.disabled = false; } };
 }
 function reveal(d) {
-  const t = cfg().VIP.find((x) => x.key === d.tier);
+  const t = [...cfg().VIP, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === d.tier);
   const o = document.createElement("div"); o.className = "wdl-reveal" + (t ? " wdl-th-" + t.theme : "");
   o.innerHTML = `<div class="wdl-reveal-card">${t ? `<div class="wdl-vip-emoji">${esc(t.emoji)}</div><p class="wdl-tag">🎁 Mystery drop unlocked · OG Founding VIP #${d.vipNo}</p><h2>${esc(t.name)}</h2>` : `<h2>Gift credit added</h2>`}
   <p>${money(d.base)} paid</p>${d.bonus ? `<p class="wdl-big">+${money(d.bonus)}</p><p>bonus credit</p>` : ""}<p>Total: <b>${money(d.amount)}</b> gift credit</p><p class="wdl-fine">Credit is not cash.</p><button class="wdl-btn">Let's go</button></div>`;
@@ -168,9 +168,26 @@ function vipCard(t) {
   <div class="wdl-vip-price">${money(t.price)}</div><p class="wdl-vip-credit">= <b>${money(credit)}</b> gift credit <small>(${money(t.price)} + ${vipPct()}% bonus credit)</small></p>
   <ul>${t.perks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">Get the ${esc(t.name)}</a>` : `<p class="wdl-fine"><b>Reserve your pass</b> — checkout opens soon.</p>${notifyForm("vip:" + t.key)}`}</div>`;
 }
+const buyOr = (key, label) => cfg().WHOP[key] ? `<a class="wdl-btn" href="${esc(cfg().WHOP[key])}" target="_blank" rel="noopener">${esc(label)}</a>` : `<p class="wdl-fine"><b>Reserve your spot</b> — checkout opens soon.</p>${notifyForm("vip:" + key)}`;
+function flashEnd() { // next Sunday 11:59:59 PM Arizona (UTC-7, no DST); rolls forward weekly
+  const az = new Date(Date.now() - 7 * 3600e3); const d = new Date(Date.UTC(az.getUTCFullYear(), az.getUTCMonth(), az.getUTCDate(), 23, 59, 59));
+  d.setUTCDate(d.getUTCDate() + ((7 - az.getUTCDay()) % 7)); return d.getTime() + 7 * 3600e3;
+}
+function cd() { let ms = Math.max(0, flashEnd() - Date.now()); const D = Math.floor(ms / 864e5); ms -= D * 864e5; const H = Math.floor(ms / 36e5); ms -= H * 36e5; const M = Math.floor(ms / 6e4); const S = Math.floor((ms - M * 6e4) / 1e3); return [D, H, M, S].map((n, i) => `<span><b>${String(n).padStart(2, "0")}</b>${["days", "hrs", "min", "sec"][i]}</span>`).join(""); }
+setInterval(() => { const e = document.getElementById("wdl-cd"); if (e) e.innerHTML = cd(); }, 1000);
+function bundleCard() { const b = cfg().BUNDLE; if (!b) return ""; const ends = new Date(flashEnd()).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/Phoenix" });
+  return `<div class="wdl-card wdl-bundle"><span class="wdl-popular">${esc(b.emoji)} Flash deal</span><h3>${esc(b.name)}</h3><p>All three passes in one go. Live lavish, save big.</p>
+  <div class="wdl-vip-price"><s>${money(b.list)}</s> ${money(b.price)}</div><p class="wdl-tag">Save ${money(b.list - b.price)}</p><p class="wdl-vip-credit">= <b>${money(b.credit)}</b> total gift credit <small>(all three passes incl. fixed 35% bonus)</small></p>
+  <div class="wdl-cd" id="wdl-cd">${cd()}</div><p class="wdl-fine">This week's flash price ends ${ends}, 11:59 PM Arizona time.</p>
+  <ul>${b.perks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${buyOr(b.key, "Grab all three")}</div>`; }
+function monthlyCard() { const m = cfg().MONTHLY; if (!m) return ""; const c = m.price * (1 + vipPct() / 100);
+  return `<div class="wdl-card wdl-monthly"><span class="wdl-vip-emoji">${esc(m.emoji)}</span><h3>${esc(m.name)}</h3><div class="wdl-vip-price">${money(m.price)}<small>/month</small></div><p class="wdl-vip-credit">= <b>${money(c)}</b> gift credit every month</p>
+  <ul>${m.perks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${buyOr(m.key, "Start monthly")}<p class="wdl-fine">Billed monthly by Whop. Cancel anytime; credit already issued stays yours.</p></div>`; }
+function wall() { setTimeout(async () => { const e = $("#wdl-wall"); if (!e) return; try { const w = (await api("wall")).wall; e.innerHTML = w.length ? w.map((p) => `<a class="wdl-who" href="#/u/${esc(p.handle)}">${avatar(p.avSeed, 30)} #${p.vipNo} @${esc(p.handle)}</a>`).join(" ") : "<p>Be the first name on the wall.</p>"; } catch { e.innerHTML = "<p>Be the first name on the wall.</p>"; } }, 0);
+  return `<div class="wdl-card"><h3>🏛️ Founders Wall</h3><div id="wdl-wall" class="wdl-row" style="gap:10px"><p>Loading…</p></div></div>`; }
 function pVip() {
   return shell("OG Founding VIP", `<div class="wdl-vip-hero"><p>Bad kids get the best seats. 🎓 These are the founding passes for the troublemakers who showed up first: a numbered OG badge, VIP flair, and priority on every pre-launch reservation and partner drop.</p></div>
-  <div class="wdl-grid wdl-vip-grid">${cfg().VIP.map(vipCard).join("")}</div>
+  <div class="wdl-grid wdl-vip-grid">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">Or go monthly</h2>${monthlyCard()}${wall()}
   <div class="wdl-card"><h3>How the credit works</h3><p>Every pass converts to Wine Detention gift credit: the price you pay <b>plus a fixed ${vipPct()}% bonus credit</b>. Same bonus for everyone, no spin, no chance. Credit never drops below what you paid.</p>
   <p class="wdl-fine">Gift credit is not cash, can't be exchanged for cash (except where law requires), and isn't alcohol. Bonus credit is promotional and may expire 12 months after issue; paid value never expires. After checkout we email a VIP code; redeem it under Gifts → Redeem to unlock your numbered badge with a confetti reveal. Passes are paid by card through Whop.</p></div>${LEGAL}`, "For the bad boys and bad girls of detention. Founding members only.");
 }
