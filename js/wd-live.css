@@ -51,3 +51,26 @@ img,svg,video{max-width:100%}
 .gate-legal{font-size:12px;opacity:.75;margin-top:12px}
 .footer-feat{padding:14px 0;font-weight:700;display:flex;flex-wrap:wrap;gap:6px 10px}
 .footer-feat a{color:inherit}
+/* OG Founding VIP */
+.wdl-vip-banner{display:grid;gap:6px;margin:14px 12px;padding:18px;border-radius:22px;text-decoration:none;color:#3D2E12;background:linear-gradient(135deg,#FFF8E6 0%,#F6E3B4 45%,#FFE9EE 100%);border:2px solid #E8D4A8;box-shadow:0 10px 26px rgba(201,169,98,.25)}
+.wdl-vip-banner b{font-family:var(--font-bang,Anton,sans-serif);font-size:clamp(24px,6vw,36px);color:#0E3386;font-weight:400;line-height:1.1}
+.wdl-vip-banner .wdl-btn{justify-self:start}
+.wdl-vip-hero p{font-size:17px;max-width:680px}
+.wdl-vip{position:relative;overflow:hidden;border-width:2px}
+.wdl-vip ul{padding-left:18px;margin:8px 0 12px}.wdl-vip li{margin:4px 0}
+.wdl-vip-top{display:flex;justify-content:space-between;align-items:center}
+.wdl-vip-emoji{font-size:40px}
+.wdl-vip-tag{font-style:italic;color:#555}
+.wdl-vip-price{font-family:var(--font-bang,Anton,sans-serif);font-size:44px;color:#0E3386;line-height:1}
+.wdl-vip-credit small{color:#73747B}
+.wdl-th-pass{background:linear-gradient(180deg,#FFFFFF,#F3F6FF);border-color:#B9C7EE}
+.wdl-th-champagne{background:linear-gradient(160deg,#FFFDF5,#F6E7BE 60%,#FFF6DA);border-color:#C9A962;box-shadow:0 10px 30px rgba(201,169,98,.35)}
+.wdl-th-champagne .wdl-vip-price,.wdl-th-champagne h3{color:#8A6A1F}
+.wdl-th-principal{background:linear-gradient(160deg,#FFFFFF,#FFECEC);border-color:#CC3433}
+.wdl-flair{display:inline-block;margin:4px 0 8px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:800;border:1.5px solid}
+.wdl-flair.wdl-th-champagne{color:#6B4F12}
+.wdl-reveal{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;background:rgba(255,255,255,.75);backdrop-filter:blur(4px);padding:16px}
+.wdl-reveal-card{max-width:380px;width:100%;text-align:center;background:#fff;border:2px solid #E8D4A8;border-radius:24px;padding:24px;box-shadow:0 20px 50px rgba(14,51,134,.18);animation:wdlpop .5s cubic-bezier(.2,1.6,.4,1)}
+.wdl-reveal.wdl-th-champagne .wdl-reveal-card{background:linear-gradient(160deg,#FFFDF5,#F6E7BE)}
+.wdl-reveal-card h2{font-family:var(--font-bang,Anton,sans-serif);color:#0E3386;font-weight:400;font-size:32px;margin:4px 0}
+@keyframes wdlpop{from{transform:scale(.6);opacity:0}}

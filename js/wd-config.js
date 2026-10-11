@@ -16,8 +16,18 @@ window.WD_CONFIG = {
     "gift-350": "",
     "gift-custom": "",          // only if you create a pay-what-you-want product in Whop
     "founding-pass": "",        // Founding Member Pass (membership)
-    "credit-bundle": ""         // Pre-launch credit bundle
+    "credit-bundle": "",        // Pre-launch credit bundle
+    "vip350": "",               // OG Founding VIP · Hall Pass ($350)
+    "vip888": "",               // OG Founding VIP · Detention Champagne Special ($888)
+    "vip1750": ""               // OG Founding VIP · Principal's Office ($1,750)
   },
+
+  /* OG Founding VIP passes. Credit = price + fixed 35% bonus credit (set server-side in api/_lib/rules.js). */
+  VIP_TIERS: [
+    { key: "vip350", name: "Hall Pass", price: 350, emoji: "🎟️", theme: "pass", tagline: "Caught in the hall without one? Not anymore.", perks: ["OG Founding VIP # badge", "VIP flair on your profile", "Priority pre-launch reservations", "First access to partner offers"] },
+    { key: "vip888", name: "Detention Champagne Special", price: 888, emoji: "🍾", theme: "champagne", tagline: "Detention, but make it gold.", perks: ["Everything in Hall Pass", "Champagne-gold VIP flair", "Priority pre-launch reservations", "First access to partner offers"] },
+    { key: "vip1750", name: "Principal's Office", price: 1750, emoji: "🔔", theme: "principal", tagline: "Sent to the office. On purpose.", perks: ["Everything in Champagne Special", "Top-tier Principal flair", "First in line for every reservation", "First access to partner offers"] }
+  ],
 
   /* Pre-launch offers sold through Whop (non-alcohol) */
   OFFERS: [

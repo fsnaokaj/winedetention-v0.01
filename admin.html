@@ -4,11 +4,11 @@
 <form id="login"><input type="password" id="pass" placeholder="ADMIN_PASS" required> <button>Unlock</button> <span id="msg"></span></form>
 <div id="app" hidden>
 <section><h2>Overview</h2><p id="stats"></p></section>
-<section><h2>Issue gift code</h2><form id="issue"><input id="amt" type="number" min="1" step="0.01" placeholder="Amount $" required> <input id="note" placeholder="Note (buyer email / Whop order)"> <button>Issue code</button></form><p id="issued"></p></section>
+<section><h2>Issue gift code</h2><form id="issue"><select id="tier"><option value="">Gift card (enter amount)</option><option value="vip350">VIP Hall Pass $350 → $472.50</option><option value="vip888">VIP Champagne Special $888 → $1,198.80</option><option value="vip1750">VIP Principal's Office $1,750 → $2,362.50</option></select> <input id="amt" type="number" min="1" step="0.01" placeholder="Amount $"> <input id="note" placeholder="Note (buyer email / Whop order)"> <button>Issue code</button></form><p id="issued"></p></section>
 <section><h2>Gift codes</h2><div id="codes"></div></section>
 <section><h2>Signups</h2><div id="signups"></div></section>
 <section><h2>Waitlist &amp; leads</h2><div id="wl"></div></section>
-<section><h2>Edit offers (overrides js/wd-config.js)</h2><p>JSON with any of: <code>WHOP_LINKS</code>, <code>PARTNERS</code>, <code>LOCKERS</code>, <code>OFFERS</code>, <code>GIFT_BONUS</code>. Empty <code>{}</code> = use the config file.</p><textarea id="offers"></textarea><button id="saveOffers">Save offers</button> <span id="omsg"></span></section>
+<section><h2>Edit offers (overrides js/wd-config.js)</h2><p>JSON with any of: <code>WHOP_LINKS</code>, <code>PARTNERS</code>, <code>LOCKERS</code>, <code>OFFERS</code>, <code>GIFT_BONUS</code>, <code>VIP_TIERS</code>. VIP checkout links go in <code>WHOP_LINKS</code> as <code>vip350</code>, <code>vip888</code>, <code>vip1750</code>, e.g. <code>{"WHOP_LINKS":{"vip888":"https://whop.com/..."}}</code>. Empty <code>{}</code> = use the config file.</p><textarea id="offers"></textarea><button id="saveOffers">Save offers</button> <span id="omsg"></span></section>
 </div></main>
 <script>
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
@@ -17,12 +17,12 @@ async function call(op,extra){const r=await fetch("/api/wd?a=admin",{method:"POS
 const tbl=(rows,cols)=>rows.length?`<table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c]&&c.endsWith("At")||c==="at"?new Date(r[c]).toLocaleString():r[c])}</td>`).join("")}</tr>`).join("")}</table>`:"<p>None yet.</p>";
 async function load(){try{const d=await call("stats");sessionStorage.setItem("wd-admin",P);document.getElementById("login").hidden=true;document.getElementById("app").hidden=false;
 document.getElementById("stats").textContent=`${d.members} members · ${d.waitlist.length} waitlist entries · ${d.codes.length} gift codes`;
-document.getElementById("signups").innerHTML=tbl(d.signups,["member","handle","email","points","credit","ref","createdAt"]);
+document.getElementById("signups").innerHTML=tbl(d.signups,["member","vip","handle","email","points","credit","ref","createdAt"]);
 document.getElementById("wl").innerHTML=tbl(d.waitlist,["email","item","at"]);
-document.getElementById("codes").innerHTML=tbl(d.codes.map(c=>({...c,redeemedBy:c.redeemedBy||""})),["code","amount","note","redeemedBy","at"]);
+document.getElementById("codes").innerHTML=tbl(d.codes.map(c=>({...c,redeemedBy:c.redeemedBy||""})),["code","tier","amount","note","redeemedBy","at"]);
 document.getElementById("offers").value=JSON.stringify(d.offers||{},null,2);}catch(e){document.getElementById("msg").textContent={bad_pass:"Wrong passphrase.",admin_not_configured:"Set ADMIN_PASS in Vercel env vars and redeploy.",store_not_configured:"KV (Upstash) not connected."}[e.message]||e.message;}}
 document.getElementById("login").onsubmit=e=>{e.preventDefault();P=document.getElementById("pass").value;load();};
-document.getElementById("issue").onsubmit=async e=>{e.preventDefault();try{const d=await call("issue",{amount:document.getElementById("amt").value,note:document.getElementById("note").value});document.getElementById("issued").innerHTML=`Issued <code>${esc(d.code)}</code> for $${d.amount}`;load();}catch(er){document.getElementById("issued").textContent=er.message;}};
+document.getElementById("issue").onsubmit=async e=>{e.preventDefault();try{const d=await call("issue",{tier:document.getElementById("tier").value,amount:document.getElementById("amt").value,note:document.getElementById("note").value});document.getElementById("issued").innerHTML=`Issued <code>${esc(d.code)}</code> for $${d.amount}${d.tier?` (${d.tier}: $${d.base} + $${d.bonus} bonus)`:""}`;load();}catch(er){document.getElementById("issued").textContent=er.message;}};
 document.getElementById("saveOffers").onclick=async()=>{try{await call("offers",{offers:JSON.parse(document.getElementById("offers").value||"{}")});document.getElementById("omsg").textContent="Saved ✓";}catch(er){document.getElementById("omsg").textContent=er.message;}};
 if(P)load();
 </script></body></html>

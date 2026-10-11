@@ -14,3 +14,10 @@ const rnd = (a) => a[Math.floor(Math.random() * a.length)];
 export const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 export function randomHandle() { const h = rnd(A) + (Math.random() < .5 ? rnd(B) : "") + Math.floor(Math.random() * 900 + 10); return h.slice(0, 20); }
 export const RESERVED = new Set(["admin", "api", "u", "gifts", "login", "signup", "account", "privacy", "terms", "partners", "collections", "cart", "checkout", "help", "support", "winedetention", "official", "staff"]);
+/* OG Founding VIP passes. Credit = price + FIXED bonus (no chance element on a paid purchase). Credit is not cash. */
+export const VIP_BONUS_PCT = 35;
+export const VIP = {
+  vip350: { name: "Hall Pass", price: 350 },
+  vip888: { name: "Detention Champagne Special", price: 888 },
+  vip1750: { name: "Principal's Office", price: 1750 },
+};
