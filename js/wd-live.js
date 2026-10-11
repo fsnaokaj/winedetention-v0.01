@@ -5,7 +5,7 @@ const W = () => window.WD || {};
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const money = (n) => "$" + Number(n).toFixed(2).replace(/\.00$/, "");
 const $ = (s) => document.querySelector(s);
-const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|policy\/(privacy|terms)|partners|u\/.+|live|party|trade|giveaways)$/;
+const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|policy\/(privacy|terms)|partners|u\/.+|live|party|trade|giveaways)$/;
 let SRV = null, D = null, client = null, ME = null, DONE = {}, OV = null, authState = "loading", authMsg = "";
 
 /* ---------- avatars (deterministic cartoon wine glass) ---------- */
@@ -30,8 +30,9 @@ const toast = (m) => (W().toast ? W().toast(m) : alert(m));
 const rerender = () => W().render && W().render();
 
 /* ---------- offers (config + admin overrides) ---------- */
-const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
+const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
 const GIFTS = [25, 50, 100, 250, 350];
+const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = (cfg().VIP.find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
 function buyBtn(key, label) {
   const url = cfg().WHOP[key];
   return url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">${esc(label || "Buy with card")}</a>` : `<button class="wdl-btn ghost" data-notify="${esc(key)}">Notify me</button>`;
@@ -91,7 +92,7 @@ function bindLogin() {
 }
 function pAccount() {
   if (!ME) return shell("My account", needLogin("your account"));
-  return shell("My account", `<div class="wdl-card wdl-pro">${avatar(ME.avSeed, 96)}<div><h3>${esc(ME.displayName || "@" + ME.handle)}</h3><p>@${esc(ME.handle)} · Member #${ME.member}</p><p><b>${ME.points.toLocaleString()}</b> hall points · <b>${money(ME.credit)}</b> gift credit</p>
+  return shell("My account", `<div class="wdl-card wdl-pro">${avatar(ME.avSeed, 96)}<div><h3>${esc(ME.displayName || "@" + ME.handle)}</h3><p>@${esc(ME.handle)} · Member #${ME.member}</p>${vipFlair(ME)}<p><b>${ME.points.toLocaleString()}</b> hall points · <b>${money(ME.credit)}</b> gift credit</p>
     <div class="wdl-row"><button class="wdl-btn ghost" data-reroll="avatar">🎲 New avatar</button><button class="wdl-btn ghost" data-reroll="handle">🎲 Random handle</button><button class="wdl-btn ghost" data-share>Share my link</button><button class="wdl-btn ghost" data-logout>Log out</button></div></div></div>
    <form class="wdl-card wdl-form" id="wdl-prof"><h3>Edit profile</h3><label>Display name<input name="displayName" maxlength="32" value="${esc(ME.displayName)}"></label><label>City<input name="city" maxlength="40" value="${esc(ME.city)}"></label><label>Bio<textarea name="bio" maxlength="160">${esc(ME.bio)}</textarea></label><label>Handle<input name="handle" maxlength="20" value="${esc(ME.handle)}" pattern="[a-z0-9_]{3,20}"></label><button class="wdl-btn">Save</button></form>
    <div class="wdl-grid3"><a class="wdl-card" href="#/spin"><h3>🎡 Welcome Spin</h3><p>${ME.welcome == null ? "Ready to spin" : "Won " + (+ME.welcome).toLocaleString() + " pts"}</p></a><a class="wdl-card" href="#/quests"><h3>✅ Daily quests</h3><p>Free points every day</p></a><a class="wdl-card" href="#/gifts/redeem"><h3>🎁 Redeem a code</h3><p>Add gift credit</p></a></div>`);
@@ -99,7 +100,7 @@ function pAccount() {
 function pProfile(h) {
   h = h.toLowerCase().replace(/^@/, "");
   setTimeout(async () => { const box = $("#wdl-pub"); if (!box) return; try { const p = (await api("profile", undefined, "&h=" + encodeURIComponent(h))).profile;
-    box.innerHTML = `<div class="wdl-card wdl-pro">${avatar(p.avSeed, 96)}<div><h3>${esc(p.displayName || "@" + p.handle)}</h3><p>@${esc(p.handle)} · Member #${p.member}${p.city ? " · " + esc(p.city) : ""}</p><p>${esc(p.bio)}</p><p><b>${p.points.toLocaleString()}</b> hall points</p>${ME ? "" : `<a class="wdl-btn" href="#/login" data-ref="${esc(p.handle)}">Join Wine Detention</a>`}</div></div>`; }
+    box.innerHTML = `<div class="wdl-card wdl-pro">${avatar(p.avSeed, 96)}<div><h3>${esc(p.displayName || "@" + p.handle)}</h3><p>@${esc(p.handle)} · Member #${p.member}${p.city ? " · " + esc(p.city) : ""}</p>${vipFlair(p)}<p>${esc(p.bio)}</p><p><b>${p.points.toLocaleString()}</b> hall points</p>${ME ? "" : `<a class="wdl-btn" href="#/login" data-ref="${esc(p.handle)}">Join Wine Detention</a>`}</div></div>`; }
     catch (e) { box.innerHTML = `<div class="wdl-card"><p>${e.status === 404 ? "No member with that handle." : esc(errText(e))}</p></div>`; } }, 0);
   return shell("@" + esc(h), `<div id="wdl-pub"><div class="wdl-card"><p>Loading…</p></div></div>`);
 }
@@ -114,6 +115,13 @@ function bindSpin() {
   b.onclick = async () => { b.disabled = true; const reel = $("#wdl-reel"); const vals = SRV.welcome.map((x) => x.v); let i = 0; const t = setInterval(() => (reel.textContent = "+" + vals[i++ % vals.length].toLocaleString()), 80);
     try { const d = await api("spin", {}); setTimeout(() => { clearInterval(t); reel.textContent = "+" + d.value.toLocaleString(); ME.welcome = d.value; ME.points = d.points; confetti(); toast("+" + d.value.toLocaleString() + " hall points"); }, 1400); }
     catch (e) { clearInterval(t); reel.textContent = "🎡"; toast(errText(e)); b.disabled = false; } };
+}
+function reveal(d) {
+  const t = cfg().VIP.find((x) => x.key === d.tier);
+  const o = document.createElement("div"); o.className = "wdl-reveal" + (t ? " wdl-th-" + t.theme : "");
+  o.innerHTML = `<div class="wdl-reveal-card">${t ? `<div class="wdl-vip-emoji">${esc(t.emoji)}</div><p class="wdl-tag">Welcome, OG Founding VIP #${d.vipNo}</p><h2>${esc(t.name)}</h2>` : `<h2>Gift credit added</h2>`}
+  <p>${money(d.base)} paid</p>${d.bonus ? `<p class="wdl-big">+${money(d.bonus)}</p><p>bonus credit</p>` : ""}<p>Total: <b>${money(d.amount)}</b> gift credit</p><p class="wdl-fine">Credit is not cash.</p><button class="wdl-btn">Let's go</button></div>`;
+  document.body.appendChild(o); o.querySelector("button").onclick = () => o.remove(); confetti(); setTimeout(confetti, 700); setTimeout(confetti, 1400);
 }
 function confetti() { const c = document.createElement("div"); c.className = "wdl-confetti"; c.innerHTML = Array.from({ length: 40 }, (_, i) => `<i style="left:${Math.random() * 100}%;background:hsl(${i * 37} 85% 55%);animation-delay:${Math.random() * .4}s"></i>`).join(""); document.body.appendChild(c); setTimeout(() => c.remove(), 2200); }
 function pQuests() {
@@ -153,6 +161,23 @@ function pGifts() {
 function pRedeem() {
   return shell("Redeem a gift code", `<div class="wdl-row wdl-tabs"><a href="#/gifts">Shop</a><a href="#/gifts/redeem" class="on">Redeem</a></div>` + (ME ? `<form class="wdl-card wdl-notify" id="wdl-redeem"><input id="wdl-gcode" required placeholder="WD-XXXX-XXXX-XXXX" aria-label="Gift code"><button class="wdl-btn">Redeem</button></form><p>Your gift credit: <b>${money(ME.credit)}</b></p>` : needLogin("redeem a code")) + LEGAL);
 }
+const vipPct = () => (SRV && SRV.vipBonusPct) || 35;
+function vipCard(t) {
+  const credit = t.price * (1 + vipPct() / 100), url = cfg().WHOP[t.key];
+  return `<div class="wdl-card wdl-vip wdl-th-${esc(t.theme)}"><div class="wdl-vip-top"><span class="wdl-vip-emoji">${esc(t.emoji)}</span><span class="wdl-tag">OG Founding VIP</span></div><h3>${esc(t.name)}</h3><p class="wdl-vip-tag">${esc(t.tagline)}</p>
+  <div class="wdl-vip-price">${money(t.price)}</div><p class="wdl-vip-credit">= <b>${money(credit)}</b> gift credit <small>(${money(t.price)} + ${vipPct()}% bonus credit)</small></p>
+  <ul>${t.perks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">Get the ${esc(t.name)}</a>` : `<p class="wdl-fine"><b>Reserve your pass</b> — checkout opens soon.</p>${notifyForm("vip:" + t.key)}`}</div>`;
+}
+function pVip() {
+  return shell("OG Founding VIP", `<div class="wdl-vip-hero"><p>Bad kids get the best seats. 🎓 These are the founding passes for the troublemakers who showed up first: a numbered OG badge, VIP flair, and priority on every pre-launch reservation and partner drop.</p></div>
+  <div class="wdl-grid wdl-vip-grid">${cfg().VIP.map(vipCard).join("")}</div>
+  <div class="wdl-card"><h3>How the credit works</h3><p>Every pass converts to Wine Detention gift credit: the price you pay <b>plus a fixed ${vipPct()}% bonus credit</b>. Same bonus for everyone, no spin, no chance. Credit never drops below what you paid.</p>
+  <p class="wdl-fine">Gift credit is not cash, can't be exchanged for cash (except where law requires), and isn't alcohol. Bonus credit is promotional and may expire 12 months after issue; paid value never expires. After checkout we email a VIP code; redeem it under Gifts → Redeem to unlock your numbered badge with a confetti reveal. Passes are paid by card through Whop.</p></div>${LEGAL}`, "Hall passes for the bad boys and bad girls of detention. Founding members only.");
+}
+export function vipHero() {
+  const T = cfg().VIP; if (!T.length) return "";
+  return `<a class="wdl-vip-banner" href="#/vip"><span class="wdl-tag">New · OG Founding VIP</span><b>Hall passes for the bad kids 🎟️🍾🔔</b><span>${T.map((t) => `${esc(t.name)} ${money(t.price)}`).join(" · ")}</span><span class="wdl-fine">Get price + ${vipPct()}% in gift credit, a numbered OG badge and first access.</span><span class="wdl-btn">See the passes</span></a>`;
+}
 function pCart() { return shell("No cart, no wine sales here", `<div class="wdl-card"><p>Wine Detention doesn't sell alcohol directly. Shop lockers at licensed partners, or pick up a gift card.</p><a class="wdl-btn" href="#/collections">Partner offers</a> <a class="wdl-btn ghost" href="#/gifts">Gift cards</a></div>${LEGAL}`); }
 function pSoon(name) { return shell(name, `<div class="wdl-card"><h3>Opening after launch</h3><p>Live rooms, parties, trades and giveaways open once the hall has real members. Get notified first.</p>${notifyForm("community")}</div>`); }
 function pPolicy(k) {
@@ -171,6 +196,7 @@ export function page(route) {
   if (route === "/collections" || route === "/partners") return pCollections();
   if (route.startsWith("/product/")) return pProduct(route.slice(9));
   if (route === "/gifts/redeem") return pRedeem();
+  if (route === "/vip") return pVip();
   if (route.startsWith("/gifts")) return pGifts();
   if (/^\/(cart|checkout|confirmation)$/.test(route)) return pCart();
   if (route.startsWith("/policy/")) return pPolicy(route.slice(8));
@@ -186,7 +212,7 @@ export function bind(route) {
   document.querySelectorAll("[data-reroll]").forEach((b) => (b.onclick = async () => { try { ME = (await api("reroll", { what: b.dataset.reroll })).me; rerender(); W().paintAuth && W().paintAuth(); } catch (e) { toast(errText(e)); } }));
   document.querySelectorAll("[data-quest]").forEach((b) => (b.onclick = async () => { try { const d = await api("quest", { id: b.dataset.quest }); DONE[b.dataset.quest] = 1; ME.points = d.points; toast("+" + d.reward + " pts"); if (b.dataset.quest === "share" && ME) { const u = location.origin + "/" + ME.handle; navigator.share ? navigator.share({ url: u }).catch(() => {}) : navigator.clipboard && navigator.clipboard.writeText(u); } if (b.dataset.href) location.hash = b.dataset.href; else rerender(); } catch (e) { toast(errText(e)); } }));
   const pf = $("#wdl-prof"); if (pf) pf.onsubmit = async (e) => { e.preventDefault(); const f = new FormData(pf); try { ME = (await api("profile", { displayName: f.get("displayName"), bio: f.get("bio"), city: f.get("city") })).me; const nh = String(f.get("handle") || "").toLowerCase(); if (nh && nh !== ME.handle) ME = (await api("reroll", { handle: nh })).me; toast("Saved"); rerender(); } catch (er) { toast(errText(er)); } };
-  const rd = $("#wdl-redeem"); if (rd) rd.onsubmit = async (e) => { e.preventDefault(); try { const d = await api("redeem", { code: $("#wdl-gcode").value }); ME.credit = d.credit; toast(money(d.amount) + " gift credit added"); confetti(); rerender(); } catch (er) { toast(errText(er)); } };
+  const rd = $("#wdl-redeem"); if (rd) rd.onsubmit = async (e) => { e.preventDefault(); try { const d = await api("redeem", { code: $("#wdl-gcode").value }); ME.credit = d.credit; if (d.tier) { ME.vip = d.tier; ME.vipNo = d.vipNo; } rerender(); reveal(d); } catch (er) { toast(errText(er)); } };
   if (route === "/login" || route === "/signup") bindLogin();
   if (route === "/spin") bindSpin();
 }
@@ -194,7 +220,7 @@ export function authBtn() {
   if (ME) return `<a href="#/account" class="account-link wdl-acct" title="@${esc(ME.handle)}">${avatar(ME.avSeed, 34)}</a>`;
   return `<a href="#/login" class="login-link">${authState === "soon" ? "Join list" : "Log in"}</a>`;
 }
-window.WDL = { page, owns, bind, authBtn, avatar };
+window.WDL = { page, owns, bind, authBtn, avatar, vipHero };
 /* /handle and /u/handle deep links -> SPA profile; ?ref= captures referrals */
 const qref = new URLSearchParams(location.search).get("ref"); if (qref) localStorage.setItem("wd-ref", qref.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20));
 const pm = location.pathname.match(/^\/(?:u\/)?@?([a-z0-9_]{3,20})\/?$/i);
