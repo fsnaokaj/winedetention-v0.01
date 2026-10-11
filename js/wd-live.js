@@ -30,9 +30,9 @@ const toast = (m) => (W().toast ? W().toast(m) : alert(m));
 const rerender = () => W().render && W().render();
 
 /* ---------- offers (config + admin overrides) ---------- */
-const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], MONTHLY: o.VIP_MONTHLY || C.VIP_MONTHLY, BUNDLE: o.VIP_BUNDLE || C.VIP_BUNDLE, BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
+const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], MONTHLY: o.VIP_MONTHLY || C.VIP_MONTHLY, MORE: o.MORE_DROPS || C.MORE_DROPS || [], BUNDLE: o.VIP_BUNDLE || C.VIP_BUNDLE, BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
 const GIFTS = [25, 50, 100, 250, 350];
-const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = ([...cfg().VIP, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
+const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = ([...cfg().VIP, ...cfg().MORE, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
 function buyBtn(key, label) {
   const url = cfg().WHOP[key];
   return url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">${esc(label || "Buy with card")}</a>` : `<button class="wdl-btn ghost" data-notify="${esc(key)}">Notify me</button>`;
@@ -117,7 +117,7 @@ function bindSpin() {
     catch (e) { clearInterval(t); reel.textContent = "🎡"; toast(errText(e)); b.disabled = false; } };
 }
 function reveal(d) {
-  const t = [...cfg().VIP, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === d.tier);
+  const t = [...cfg().VIP, ...cfg().MORE, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === d.tier);
   const o = document.createElement("div"); o.className = "wdl-reveal" + (t ? " wdl-th-" + t.theme : "");
   o.innerHTML = `<div class="wdl-reveal-card">${t ? `<div class="wdl-vip-emoji">${esc(t.emoji)}</div><p class="wdl-tag">🎁 Mystery drop unlocked · OG Founding VIP #${d.vipNo}</p><h2>${esc(t.name)}</h2>` : `<h2>Gift credit added</h2>`}
   <p>${money(d.base)} paid</p>${d.bonus ? `<p class="wdl-big">+${money(d.bonus)}</p><p>bonus credit</p>` : ""}<p>Total: <b>${money(d.amount)}</b> gift credit</p><p class="wdl-fine">Credit is not cash.</p><button class="wdl-btn">Let's go</button></div>`;
@@ -187,7 +187,7 @@ function wall() { setTimeout(async () => { const e = $("#wdl-wall"); if (!e) ret
   return `<div class="wdl-card"><h3>🏛️ Founders Wall</h3><div id="wdl-wall" class="wdl-row" style="gap:10px"><p>Loading…</p></div></div>`; }
 function pVip() {
   return shell("OG Founding VIP", `<div class="wdl-vip-hero"><p>Bad kids get the best seats. 🎓 These are the founding passes for the troublemakers who showed up first: a numbered OG badge, VIP flair, and priority on every pre-launch reservation and partner drop.</p></div>
-  <div class="wdl-grid wdl-vip-grid">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">Or go monthly</h2>${monthlyCard()}${wall()}
+  <div class="wdl-grid wdl-vip-grid">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">Or go monthly</h2>${monthlyCard()}<h2 class="wdl-h2">More drops</h2><p>Extra one-time collector passes. Same fixed 35% bonus credit, no chance involved.</p><div class="wdl-grid">${cfg().MORE.map(vipCard).join("")}</div>${wall()}
   <div class="wdl-card"><h3>How the credit works</h3><p>Every pass converts to Wine Detention gift credit: the price you pay <b>plus a fixed ${vipPct()}% bonus credit</b>. Same bonus for everyone, no spin, no chance. Credit never drops below what you paid.</p>
   <p class="wdl-fine">Gift credit is not cash, can't be exchanged for cash (except where law requires), and isn't alcohol. Bonus credit is promotional and may expire 12 months after issue; paid value never expires. After checkout we email a VIP code; redeem it under Gifts → Redeem to unlock your numbered badge with a confetti reveal. Passes are paid by card through Whop.</p></div>${LEGAL}`, "For the bad boys and bad girls of detention. Founding members only.");
 }
