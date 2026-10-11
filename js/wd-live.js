@@ -5,7 +5,7 @@ const W = () => window.WD || {};
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, "");
 const $ = (s) => document.querySelector(s);
-const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|policy\/(privacy|terms)|partners|u\/.+|live|party|trade|giveaways|socials|how-it-works)$/;
+const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|policy\/(privacy|terms)|partners|u\/.+|socials|how-it-works)$/;
 let SRV = null, D = null, client = null, ME = null, DONE = {}, OV = null, authState = "loading", authMsg = "";
 
 /* ---------- avatars (deterministic cartoon wine glass) ---------- */
@@ -34,9 +34,9 @@ const toast = (m) => (W().toast ? W().toast(m) : alert(m));
 const rerender = () => W().render && W().render();
 
 /* ---------- offers (config + admin overrides) ---------- */
-const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], MONTHLY: o.VIP_MONTHLY || C.VIP_MONTHLY, MORE: o.MORE_DROPS || C.MORE_DROPS || [], BUNDLE: o.VIP_BUNDLE || C.VIP_BUNDLE, BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
+const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], MORE: o.MORE_DROPS || C.MORE_DROPS || [], BUNDLE: o.VIP_BUNDLE || C.VIP_BUNDLE, BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
 const GIFTS = [175, 350, 500, 1000];
-const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = ([...cfg().VIP, ...cfg().MORE, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
+const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = ([...cfg().VIP, ...cfg().MORE, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
 function buyBtn(key, label) {
   const url = cfg().WHOP[key];
   return url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">${esc(label || "Buy with card")}</a>` : `<button class="wdl-btn ghost" data-notify="${esc(key)}">Notify me</button>`;
@@ -121,7 +121,7 @@ function bindSpin() {
     catch (e) { clearInterval(t); reel.textContent = "🎡"; toast(errText(e)); b.disabled = false; } };
 }
 function reveal(d) {
-  const t = [...cfg().VIP, ...cfg().MORE, { ...(cfg().MONTHLY || {}), theme: "pass" }, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === d.tier);
+  const t = [...cfg().VIP, ...cfg().MORE, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === d.tier);
   const o = document.createElement("div"); o.className = "wdl-reveal" + (t ? " wdl-th-" + t.theme : "");
   o.innerHTML = `<div class="wdl-reveal-card">${t ? `<div class="wdl-vip-emoji">${esc(t.emoji)}</div><p class="wdl-tag">🎁 Mystery drop unlocked · OG Founding VIP #${d.vipNo}</p><h2>${esc(t.name)}</h2>` : `<h2>Gift credit added</h2>`}
   <p>${money(d.base)} paid</p>${d.bonus ? `<p class="wdl-big">+${money(d.bonus)}</p><p>bonus credit</p>` : ""}<p>Total: <b>${money(d.amount)}</b> gift credit</p><p class="wdl-fine">Credit is not cash.</p><button class="wdl-btn">Let's go</button></div>`;
@@ -166,8 +166,8 @@ function pRedeem() {
   return shell("Redeem a gift code", `<div class="wdl-row wdl-tabs"><a href="#/gifts">Shop</a><a href="#/gifts/redeem" class="on">Redeem</a></div>` + (ME ? `<form class="wdl-card wdl-notify" id="wdl-redeem"><input id="wdl-gcode" required placeholder="WD-XXXX-XXXX-XXXX" aria-label="Gift code"><button class="wdl-btn">Redeem</button></form><p>Your gift credit: <b>${money(ME.credit)}</b></p>` : needLogin("redeem a code")) + LEGAL);
 }
 const vipPct = () => (SRV && SRV.vipBonusPct) || 35;
-const DROP_C = { vip350: ["#E11D48", "#F5C451", "#FFF1F2"], vip888: ["#A87A12", "#E9C46A", "#FFFBEB"], vip1750: ["#1E3A8A", "#7C3AED", "#EEF2FF"], vip1313: ["#9B1B30", "#0E3386", "#FFF1F2"], vip2500: ["#E879A9", "#F5C451", "#FDF2F8"], vip3500: ["#047857", "#E6B73F", "#ECFDF5"], vip5000: ["#6D28D9", "#F5C451", "#F5F3FF"], vipMonthly: ["#0E3386", "#60A5FA", "#EFF6FF"], vipBundle: ["#CC3433", "#E6B73F", "#FFFBEB"] };
-const HOOK = { vip350: "Sealed for the troublemakers who showed up first. Everybody's favorite.", vip888: "Pop goes the after-party. What's under the foil?", vip1750: "Locked in velvet. For the ones going all in.", vip1313: "Called to the office. Lucky 13 inside.", vip2500: "Top-floor views. Contents classified.", vip3500: "Goes straight on your permanent record.", vip5000: "The royal vault. Velvet ropes only.", vipMonthly: "A fresh sealed drop every month. Cancel anytime.", vipBundle: "Three sealed drops, one flash price." };
+const DROP_C = { vip350: ["#E11D48", "#F5C451", "#FFF1F2"], vip888: ["#A87A12", "#E9C46A", "#FFFBEB"], vip1750: ["#1E3A8A", "#7C3AED", "#EEF2FF"], vip1313: ["#9B1B30", "#0E3386", "#FFF1F2"], vip2500: ["#E879A9", "#F5C451", "#FDF2F8"], vip3500: ["#047857", "#E6B73F", "#ECFDF5"], vip5000: ["#6D28D9", "#F5C451", "#F5F3FF"], vipBundle: ["#CC3433", "#E6B73F", "#FFFBEB"] };
+const HOOK = { vip350: "Sealed for the troublemakers who showed up first. Everybody's favorite.", vip888: "Pop goes the after-party. What's under the foil?", vip1750: "Locked in velvet. For the ones going all in.", vip1313: "Called to the office. Lucky 13 inside.", vip2500: "Top-floor views. Contents classified.", vip3500: "Goes straight on your permanent record.", vip5000: "The royal vault. Velvet ropes only.", vipBundle: "Three sealed drops, one flash price." };
 function boxSvg(key) { const [a, b, bg] = DROP_C[key] || DROP_C.vip350, id = "g" + key;
   return `<svg class="wdl-box" viewBox="0 0 200 170" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient><radialGradient id="${id}r"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="${bg}" stop-opacity="0"/></radialGradient></defs>
   <circle cx="100" cy="88" r="84" fill="url(#${id}r)"/>${[[22, 30, "#F59E0B"], [176, 40, "#EC4899"], [30, 120, "#3B82F6"], [172, 126, "#10B981"], [60, 14, "#EF4444"], [148, 12, "#8B5CF6"]].map(([x, y, c], i) => `<rect x="${x}" y="${y}" width="7" height="12" rx="2" fill="${c}" transform="rotate(${i * 37} ${x} ${y})"/>`).join("")}
@@ -197,12 +197,13 @@ function wall() { setTimeout(async () => { const e = $("#wdl-wall"); if (!e) ret
   return `<div class="wdl-card"><h3>🏛️ Founders Wall</h3><div id="wdl-wall" class="wdl-row" style="gap:10px"><p>Loading…</p></div></div>`; }
 function pHome() {
   return `<section class="wdl"><div class="wdl-homehero"><span class="wdl-tag">Whitelist · OG early access</span><h1>OG Founding VIP Drops</h1><p>Sealed mystery drops for the whales, whitelist and OGs who got here first. 🎁🎆</p>${ME ? "" : `<a class="wdl-btn ghost" href="#/login">Get on the whitelist</a>`}</div>
-  <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">Monthly drop</h2><div class="wdl-drops">${monthlyCard()}</div><h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>
+  <a class="wdl-card wdl-radio" href="#/party" style="display:flex;gap:14px;align-items:center;text-decoration:none;margin:0 0 18px"><span style="font-size:36px" aria-hidden="true">♪</span><div><span class="wdl-tag">Detention Radio</span><h3 style="margin:4px 0">Superboy · First Person</h3><p class="wdl-fine">Tap play on the player, or open the full jukebox.</p></div><span class="wdl-btn ghost">Party</span></a>
+  <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>
   <a class="wdl-card wdl-giftteaser" href="#/gifts"><h3>🎁 VIP gift cards</h3><p>$175 · $350 · $500 · $1,000, each with a fixed +10% bonus credit.</p><span class="wdl-btn ghost">Shop gift cards</span></a>${wall()}${LEGAL}</section>`;
 }
 function pVip() {
   return shell("OG Founding VIP Drops", `<div class="wdl-vip-hero"><p>Sealed drops for the bad boys and bad girls who showed up first. 🎁🎆</p></div>
-  <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">Monthly drop</h2><div class="wdl-drops">${monthlyCard()}</div><h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>${wall()}${LEGAL}`);
+  <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>${wall()}${LEGAL}`);
 }
 export function vipHero() {
   const T = cfg().VIP; if (!T.length) return "";
@@ -210,8 +211,8 @@ export function vipHero() {
 }
 function pCart() { return shell("No cart, no wine sales here", `<div class="wdl-card"><p>Wine Detention doesn't sell alcohol directly. Shop lockers at licensed partners, or pick up a gift card.</p><a class="wdl-btn" href="#/collections">Partner offers</a> <a class="wdl-btn ghost" href="#/gifts">Gift cards</a></div>${LEGAL}`); }
 function pSoon(name) { return shell(name, `<div class="wdl-card"><h3>Opening after launch</h3><p>Live rooms, parties, trades and giveaways open once the hall has real members. Get notified first.</p>${notifyForm("community")}</div>`); }
-function dropTerms() { const all = [...cfg().VIP, cfg().BUNDLE, cfg().MONTHLY, ...cfg().MORE].filter(Boolean);
-  return `<h3 id="drops">OG Founding VIP drop contents</h3><p>Every drop has fixed contents, identical for every buyer. Nothing is random. Contents are Wine Detention gift credit plus profile perks; no alcohol is included. Gift credit is not cash.</p><ul>${all.map((t) => `<li><b>${esc(t.name)}</b> (${money(t.price)}${t.key === "vipMonthly" ? "/month" : ""}): ${money(t.credit || t.price * (1 + vipPct() / 100))} gift credit${t.key === "vipMonthly" ? " each month" : ""}; ${esc((t.perks || []).join(", "))}.</li>`).join("")}</ul><p>Bonus portion of credit is promotional and may expire 12 months after issue; paid value never expires.</p>`; }
+function dropTerms() { const all = [...cfg().VIP, cfg().BUNDLE, ...cfg().MORE].filter(Boolean);
+  return `<h3 id="drops">OG Founding VIP drop contents</h3><p>Every drop has fixed contents, identical for every buyer. Nothing is random. Contents are Wine Detention gift credit plus profile perks; no alcohol is included. Gift credit is not cash.</p><ul>${all.map((t) => `<li><b>${esc(t.name)}</b> (${money(t.price)}): ${money(t.credit || t.price * (1 + vipPct() / 100))} gift credit; ${esc((t.perks || []).join(", "))}.</li>`).join("")}</ul><p>Bonus portion of credit is promotional and may expire 12 months after issue; paid value never expires.</p>`; }
 function pPolicy(k) {
   const T = k === "privacy" ? ["Privacy Policy", `<p><b>Placeholder — to be finalized before launch.</b></p><p>We collect your email or wallet address (via Dynamic), your profile details, waitlist emails, and referral handles. We use them to run your account, points and gift credit and to tell you about launches. Card payments are processed by Whop; we never see your card number. Wine purchases happen on licensed partner sites under their own privacy policies; partner links include your public @handle as a referral tag. Email hello@winedetention.com to access or delete your data.</p>`] :
     ["Terms of Service", `<p><b>Placeholder — to be finalized before launch.</b></p><p>You must be 21 or older. Wine Detention does not sell, ship or deliver alcohol. Wine purchases are fulfilled by licensed partners, who are the sellers of record and handle age verification and shipping to permitted states. Gift cards, pre-launch credits and memberships are sold via Whop and contain no alcohol. Gift card bonus credit is promotional, not cash, and may expire 12 months after issue; paid gift card value does not expire. Hall points are free, for fun and have no cash value. Welcome Spin odds are published on the spin page.</p>${dropTerms()}`];

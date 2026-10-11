@@ -14,12 +14,10 @@ window.WD_CONFIG = {
     "gift-500": "",
     "gift-1000": "",
     "gift-custom": "",          // only if you create a pay-what-you-want product in Whop
-    "founding-pass": "",        // Founding Member Pass (membership)
     "credit-bundle": "",        // Pre-launch credit bundle
     "vip350": "",               // Founding Members: OG VIP Mystery Drop ($350)
     "vip888": "",               // Let's Pop: Champagne After Hours Special ($888)
     "vip1750": "",              // The Private Reserve: Bougie Luxury Stash ($1,750)
-    "vipMonthly": "",           // Founding Members Monthly ($36/month subscription)
     "vipBundle": "",            // OG Flash Deal: All Three
     "vip1313": "",              // The Private Reserve: Principal's Pour ($1,313)
     "vip2500": "",              // The Private Reserve: Penthouse Pour ($2,500)
@@ -28,7 +26,6 @@ window.WD_CONFIG = {
   },
 
   /* OG Founding VIP passes. Credit = price + fixed 35% bonus credit (set server-side in api/_lib/rules.js). */
-  VIP_MONTHLY: { key: "vipMonthly", name: "Founding Members Monthly", price: 36, emoji: "📅", perks: ["$36 + 35% bonus = $48.60 gift credit every month", "OG Founding VIP # badge", "Member perks and early drops", "Cancel anytime"] },
   VIP_BUNDLE: { key: "vipBundle", name: "OG Flash Deal: All Three", price: 2738, list: 2988, credit: 4033.80, emoji: "⚡", perks: ["All three passes at once", "$4,033.80 total gift credit", "Top VIP number range (#1–#100)", "Your name on the Founders Wall", "Everything in every pass, Private Reserve included"] },
   MORE_DROPS: [
     { key: "vip1313", name: "The Private Reserve: Principal's Pour", price: 1313, emoji: "🔔", theme: "principal", tagline: "Called to the office, on purpose. A collector pour with a lucky 13 for the hall's favorite troublemakers.", perks: ["OG Founding VIP # badge", "Principal's Pour collector flair", "Priority pre-launch reservations", "First access to partner offers"] },
@@ -44,7 +41,6 @@ window.WD_CONFIG = {
 
   /* Pre-launch offers sold through Whop (non-alcohol) */
   OFFERS: [
-    { key: "founding-pass", name: "Founding Member Pass", price: "$36 / year", blurb: "Founding member number, badge on your profile, early access to partner drops and member-only events. No alcohol included." },
     { key: "credit-bundle", name: "Pre-launch Credit Bundle", price: "$100", blurb: "$100 of Wine Detention gift credit plus a fixed $10 promotional bonus credit. Use it on future site purchases (not alcohol on this site)." }
   ],
 
@@ -69,5 +65,4 @@ window.WD_CONFIG = {
   },
 
   DYNAMIC_SDK_VERSION: "1.39.1",
-  SUSHIBUTT_URL: "https://sushibutt.com"
 };

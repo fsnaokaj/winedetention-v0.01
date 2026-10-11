@@ -2546,7 +2546,7 @@
     liveK:"STREAMING IN PUBLIC", liveH:"The locker is live on 18 apps.",
     liveP:"Live rooms open at launch.",
     tradeK:"NAPA → THE WORLD", tradeH:"Import / export lanes are open.",
-    tradeP:"We show the route from Napa Valley lockers to Hong Kong, mainland China, Russia, and the rest of the night.",
+    tradeP:"We show the route from Napa Valley lockers to Hong Kong and the rest of the night.",
     giveK:"HUGE GIVEAWAYS", giveH:"The whole hall is poppin'.",
     giveP:"Enter with detention points. Weekly cellar raids, 1-of-1 icons, and crew prizes.",
     questK:"DAILY QUESTS", questH:"Farm points for every move.",
@@ -2570,30 +2570,30 @@
   });
 
   var SOCIALS = [
-    {id:"tiktok", name:"TikTok", url:"https://www.tiktok.com", live:true},
-    {id:"instagram", name:"Instagram", url:"https://www.instagram.com", live:true},
-    {id:"youtube", name:"YouTube", url:"https://www.youtube.com", live:true},
-    {id:"x", name:"X", url:"https://x.com", live:true},
-    {id:"whatnot", name:"Whatnot", url:"https://www.whatnot.com", live:true},
-    {id:"douyin", name:"Douyin", url:"https://www.douyin.com", live:true},
-    {id:"red", name:"Xiaohongshu", url:"https://www.xiaohongshu.com", live:true},
-    {id:"twitch", name:"Twitch", url:"https://www.twitch.tv", live:true},
-    {id:"kick", name:"Kick", url:"https://kick.com", live:false},
-    {id:"discord", name:"Discord", url:"https://discord.com", live:true},
-    {id:"telegram", name:"Telegram", url:"https://telegram.org", live:false},
-    {id:"facebook", name:"Facebook", url:"https://www.facebook.com", live:false},
-    {id:"threads", name:"Threads", url:"https://www.threads.com", live:false},
-    {id:"snapchat", name:"Snapchat", url:"https://www.snapchat.com", live:false},
-    {id:"pinterest", name:"Pinterest", url:"https://www.pinterest.com", live:false},
-    {id:"reddit", name:"Reddit", url:"https://www.reddit.com", live:false},
-    {id:"wechat", name:"WeChat", url:"https://www.wechat.com", live:true},
-    {id:"vk", name:"VK", url:"https://vk.com", live:true}
+    {id:"tiktok", name:"TikTok", url:"https://www.tiktok.com/@winedetention", live:true},
+    {id:"instagram", name:"Instagram", url:"https://www.instagram.com/winedetention", live:true},
+    {id:"youtube", name:"YouTube", url:"https://www.youtube.com/@winedetention", live:true},
+    {id:"x", name:"X", url:"https://x.com/winedetention", live:true},
+    {id:"twitch", name:"Twitch", url:"https://www.twitch.tv/winedetention", live:true},
+    {id:"kick", name:"Kick", url:"https://kick.com/winedetention", live:true},
+    {id:"discord", name:"Discord", url:"https://discord.gg/winedetention", live:true},
+    {id:"telegram", name:"Telegram", url:"https://t.me/winedetention", live:false},
+    {id:"facebook", name:"Facebook", url:"https://www.facebook.com/winedetention", live:false},
+    {id:"threads", name:"Threads", url:"https://www.threads.net/@winedetention", live:false},
+    {id:"snapchat", name:"Snapchat", url:"https://www.snapchat.com/add/winedetention", live:false},
+    {id:"pinterest", name:"Pinterest", url:"https://www.pinterest.com/winedetention", live:false},
+    {id:"reddit", name:"Reddit", url:"https://www.reddit.com/r/winedetention", live:false},
+    {id:"linkedin", name:"LinkedIn", url:"https://www.linkedin.com/company/winedetention", live:false},
+    {id:"spotify", name:"Spotify", url:"https://open.spotify.com/user/winedetention", live:false},
+    {id:"medium", name:"Medium", url:"https://medium.com/@winedetention", live:false},
+    {id:"substack", name:"Substack", url:"https://substack.com/@winedetention", live:false},
+    {id:"rumble", name:"Rumble", url:"https://rumble.com/c/winedetention", live:false}
   ];
 
   var ROOMS = [
-    {id:"whatnot", host:"Coach Vale", title:"Whatnot locker raid", chat:"NY just jumped a 2020 Oakville cab", viewers:41, product:"napa-cab-lane"},
-    {id:"douyin", host:"Night Market Mei", title:"Douyin night crush", chat:"HK crew at 11/12 for the bonus", viewers:67, product:"prestige-cuvee"},
     {id:"tiktok", host:"Hall Monitor Jax", title:"TikTok shop flash", chat:"Don't blink the patio rosé", viewers:28, product:"patio-rose"},
+    {id:"twitch", host:"Coach Vale", title:"Twitch locker raid", chat:"NY just jumped a 2020 Oakville cab", viewers:41, product:"napa-cab-lane"},
+    {id:"kick", host:"Night Market Mei", title:"Kick night crush", chat:"HK crew at 11/12 for the bonus", viewers:67, product:"prestige-cuvee"},
     {id:"pinot", host:"Vale.Napa", title:"Coastal Pinot", chat:"Sta. Rita Hills just popped +$92", viewers:36, product:"coastal-pinot"}
   ];
 
@@ -2614,7 +2614,7 @@
     {id:"napa", title:"Napa Neon", artist:"Mei HK", album:"Export Lanes", dur:"2:41", bpm:126, kick:476, hat:238, notes:[62,70,78,93]},
     {id:"sentence", title:"Today's Sentence", artist:"Coach Vale", album:"Locker Raids", dur:"3:05", bpm:118, kick:508, hat:254, notes:[52,62,70,78]},
     {id:"ivy", title:"Ivy Wall Disco", artist:"Jax NY", album:"Hall Pass Cuts", dur:"2:36", bpm:122, kick:492, hat:246, notes:[58,69,73,87]},
-    {id:"crush", title:"Grape Crush Anthem", artist:"Night Market", album:"Douyin Nights", dur:"3:20", bpm:100, kick:600, hat:300, notes:[41,49,55,62]},
+    {id:"crush", title:"Grape Crush Anthem", artist:"Night Market", album:"Night Market", dur:"3:20", bpm:100, kick:600, hat:300, notes:[41,49,55,62]},
     {id:"bubble", title:"Champagne Frequency", artist:"Detention Radio", album:"Pop The Locker", dur:"2:22", bpm:128, kick:469, hat:234, notes:[65,73,82,98]},
     {id:"lastcall", title:"Last Call Locker", artist:"Hall Monitor Band", album:"Detention Radio Vol. 1", dur:"3:44", bpm:96, kick:625, hat:312, notes:[46,55,62,69]}
   ];
@@ -2664,7 +2664,6 @@
   var LANES = [
     {from:"Napa Valley", to:"Hong Kong", hours:16, mode:"Bonded air", note:"Tsim Sha Tsui tasting lockers. Same-week reveal."},
     {from:"Napa Valley", to:"Shanghai / Shenzhen", hours:18, mode:"Bonded air", note:"Future lane — via licensed importer partners only."},
-    {from:"Napa Valley", to:"Moscow", hours:20, mode:"Bonded air", note:"VK stream + local fulfillment sketch. Weather-packed."},
     {from:"Napa Valley", to:"Tokyo", hours:14, mode:"Air", note:"Late-night Shibuya watch parties."},
     {from:"Napa Valley", to:"London", hours:11, mode:"Air", note:"Soho detention after-hours."},
     {from:"Napa Valley", to:"Dubai", hours:16, mode:"Air", note:"Desert-proof insulation on the box."}
@@ -3900,7 +3899,7 @@
     if (/drop|wine|buy|shop|sentence|locker|pinot|cabernet|chardonnay|sauvignon|bottle|allocation|rose|champagne/.test(s)) return "Eight launch lockers — rosé $35, bubbles $53, Napa cab $88, then Pinot, Chardonnay, Rutherford, mountain icon, and a $350 prestige cuvée. Floor is always the buy-in. We don’t ship alcohol in this preview.";
     if (/age|21|legal/.test(s)) return "You must be 21+. Wine Detention doesn't sell alcohol; wine purchases are fulfilled by licensed partners.";
     if (/pt|point|pts|quest/.test(s)) return "PTS live on this device. Buys, shares, and quests add up. 40 pts bumps a jukebox request.";
-    if (/ship|deliver|hk|napa|moscow/.test(s)) return "We sketch Napa lanes to Hong Kong, Shanghai, Moscow, Tokyo, London, and Dubai. Shipping stays a sketch until a licensed partner is live.";
+    if (/ship|deliver|hk|napa/.test(s)) return "We sketch Napa lanes to Hong Kong, Tokyo, London, and Dubai. Shipping stays a sketch until a licensed partner is live.";
     if (/support|help|hi|hey|hello|thanks|thank/.test(s)) return conciergeHello();
     return "I can help with today’s drop, gifts, profiles, the radio, points, or your pass. Pick a button or type a question.";
   }
@@ -4300,8 +4299,7 @@
       '<div class="prize"><h3>Napa → HK crew locker</h3><p style="margin:10px 0;">'+crewFilled+' / '+need+' in. Bonus bottle unlocks at 12.</p>'+
         '<div class="stock-bar"><i style="width:'+pct+'%"></i></div>'+
         '<button class="btn btn-primary" id="join-crew" style="margin-top:12px;">'+t("joinCrew")+'</button></div>'+
-      '<div class="prize"><h3>Moscow night crew</h3><p style="margin:10px 0;">VK stream is filling a parallel locker. Same drop, later timezone.</p>'+
-        '<a class="btn btn-dark" href="#/live" style="margin-top:12px;display:inline-block;">Watch VK / Whatnot</a></div>'+
+
     '</div>';
   }
   function pageHero(k,h,p){
@@ -4353,7 +4351,7 @@
         '<div class="track-list">'+rows+'</div>'+
       '</section>'+
       '<section class="why-alt">'+
-        '<div class="section-head"><span class="kicker">KARAOKE LIVE</span><h2>Go on stage.</h2><p>Same energy as a Whatnot booth — you, a mic, the hall watching.</p></div>'+
+        '<div class="section-head"><span class="kicker">KARAOKE LIVE</span><h2>Go on stage.</h2><p>Same energy as a live booth — you, a mic, the hall watching.</p></div>'+
         '<div class="stage">'+
           '<div class="live-dot" style="margin:0 auto 12px;">LIVE KARAOKE</div>'+
           '<div class="stage-pulse"></div>'+
@@ -4378,9 +4376,9 @@
         '<svg viewBox="0 0 800 260" width="100%" aria-hidden="true">'+
           '<circle cx="120" cy="150" r="8" fill="#FFFFFF"/><text x="136" y="155" fill="#FFFFFF" font-size="14">Napa</text>'+
           '<circle cx="620" cy="70" r="7" fill="#CC3433"/><text x="636" y="74" fill="#FFFFFF" font-size="14">HK / CN</text>'+
-          '<circle cx="560" cy="90" r="6" fill="#FFFFFF"/><text x="400" y="40" fill="#FFFFFF" font-size="13">Moscow</text>'+
+          '<circle cx="700" cy="140" r="6" fill="#FFFFFF"/><text x="650" y="170" fill="#FFFFFF" font-size="13">Tokyo</text>'+
           '<path d="M128 150 C 300 40, 480 30, 616 70" stroke="#FFFFFF" fill="none" stroke-width="2"/>'+
-          '<path d="M128 150 C 260 20, 420 10, 500 40" stroke="#CC3433" fill="none" stroke-width="2"/>'+
+          '<path d="M128 150 C 360 180, 560 160, 694 140" stroke="#CC3433" fill="none" stroke-width="2"/>'+
         '</svg>'+
         '<p style="text-align:center;color:var(--gold);font-family:var(--font-type);font-size:13px;">Future lanes via licensed importer partners. Not live yet.</p>'+
       '</div></section>'+
@@ -4441,11 +4439,11 @@
     return pageHero("THE SYLLABUS","How the whole party works","Drop. Stream. Farm points. Export the case. This is not a quiet wine club.") +
       '<section><div class="steps">'+
         stepCard("1","Catch the live locker","Home and Live run the same daily sentence. Stock burns on a clock.")+
-        stepCard("2","Sit the stream","Whatnot / Douyin / TikTok rooms. Sitting in one is a quest.")+
+        stepCard("2","Sit the stream","TikTok / Twitch / Kick rooms. Sitting in one is a quest.")+
         stepCard("3","Crew up","Fill a group locker for a bonus bottle.")+
         stepCard("4","Pay one price","Three bottles assigned at checkout. Floor is your buy-in.")+
         stepCard("5","Bank points","Scroll, share, post, farm, buy. Giveaways spend the same points.")+
-        stepCard("6","Export the case","Napa can ride to HK, China, Russia, Tokyo, London, Dubai in a live importer version.")+
+        stepCard("6","Export the case","Napa can ride to HK, Tokyo, London, Dubai in a live importer version.")+
       '</div></section>';
   }
   function journeyStep(n,title,body){ return '<h2>'+n+'. '+title+'</h2><p>'+body+'</p>'; }
@@ -4480,7 +4478,7 @@
   function pageContact(){
     return pageHero("NOTE TO THE OFFICE","Ping the hall monitors","Press, importer partners, stream hosts, or a wild giveaway idea.") +
       '<div class="content-block">' +
-        '<p>Napa desk · HK night desk · Moscow VK desk. This form stays in your browser.</p>'+
+        '<p>Napa desk · HK night desk. Messages go to our waitlist inbox.</p>'+
         '<form id="contact-form">' +
           '<div class="form-row"><label for="c-name">'+t("name")+'</label><input id="c-name" required></div>' +
           '<div class="form-row"><label for="c-email">'+t("email")+'</label><input id="c-email" type="email" required></div>' +
@@ -5113,10 +5111,17 @@
     }
     if (route === "/contact"){
       var cform = document.getElementById("contact-form");
-      cform.addEventListener("submit", function(e){
+      if (cform) cform.addEventListener("submit", function(e){
         e.preventDefault();
-        document.getElementById("contact-msg").textContent = t("contactOk");
-        cform.reset();
+        var msgEl = document.getElementById("contact-msg");
+        var email = (document.getElementById("c-email")||{}).value || "";
+        var name = (document.getElementById("c-name")||{}).value || "";
+        var body = (document.getElementById("c-msg")||{}).value || "";
+        var item = ("contact:" + name + " — " + body).slice(0, 60);
+        msgEl.textContent = "Sending…";
+        fetch("/api/wd?a=notify", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ email: email, item: item }) })
+          .then(function(r){ if (!r.ok) throw new Error("fail"); msgEl.textContent = t("contactOk"); cform.reset(); })
+          .catch(function(){ msgEl.textContent = "Could not send — try again or email hello@winedetention.com"; });
       });
     }
     if (route === "/"){

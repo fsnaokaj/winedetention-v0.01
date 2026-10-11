@@ -17,7 +17,6 @@ export const RESERVED = new Set(["admin", "api", "u", "gifts", "login", "signup"
 /* OG Founding VIP passes. Credit = price + FIXED bonus (no chance element on a paid purchase). Credit is not cash. */
 export const VIP_BONUS_PCT = 35;
 export const VIP = {
-  vipMonthly: { name: "Founding Members Monthly", price: 36, monthly: true },
   vip350: { name: "Founding Members: OG VIP Mystery Drop", price: 350 },
   vip888: { name: "Let's Pop: Champagne After Hours Special", price: 888 },
   vip1750: { name: "The Private Reserve: Bougie Luxury Stash", price: 1750 },
@@ -27,6 +26,6 @@ export const VIP = {
   vip5000: { name: "The Royal Reserve: Drunk Tank Deluxe", price: 5000 },
   vipBundle: { name: "OG Flash Deal: All Three", price: 2738, list: 2988, credit: 4033.8, bundle: true },
 };
-export const VIP_RANK = ["vipMonthly", "vip350", "vip888", "vip1313", "vip1750", "vipBundle", "vip2500", "vip3500", "vip5000"];
+export const VIP_RANK = ["vip350", "vip888", "vip1313", "vip1750", "vipBundle", "vip2500", "vip3500", "vip5000"];
 export const BUNDLE_RANGE = 100; // bundle buyers get VIP #1-#100; everyone else starts at #101
 export const REFERRAL = { inviter: 1000, invitee: 500 };
