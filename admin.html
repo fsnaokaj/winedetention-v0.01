@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Admin · Wine Detention</title><link rel="icon" href="/favicon.svg">
+<style>body{font-family:system-ui,sans-serif;background:#F6F7FB;color:#161823;margin:0;padding:16px}main{max-width:1000px;margin:auto}h1{color:#0E3386}section{background:#fff;border:1px solid #E8E8EA;border-radius:14px;padding:14px;margin:12px 0;overflow-x:auto}input,textarea,button{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid #C9D3EA;margin:4px 0}button{background:#CC3433;color:#fff;border:0;font-weight:700;cursor:pointer}textarea{width:100%;min-height:260px;font-family:monospace;font-size:12px;box-sizing:border-box}table{border-collapse:collapse;width:100%;font-size:13px}td,th{text-align:left;padding:6px;border-bottom:1px solid #eee}code{background:#F3F6FF;padding:2px 6px;border-radius:6px}</style></head>
+<body><main><h1>Wine Detention admin</h1>
+<form id="login"><input type="password" id="pass" placeholder="ADMIN_PASS" required> <button>Unlock</button> <span id="msg"></span></form>
+<div id="app" hidden>
+<section><h2>Overview</h2><p id="stats"></p></section>
+<section><h2>Issue gift code</h2><form id="issue"><input id="amt" type="number" min="1" step="0.01" placeholder="Amount $" required> <input id="note" placeholder="Note (buyer email / Whop order)"> <button>Issue code</button></form><p id="issued"></p></section>
+<section><h2>Gift codes</h2><div id="codes"></div></section>
+<section><h2>Signups</h2><div id="signups"></div></section>
+<section><h2>Waitlist &amp; leads</h2><div id="wl"></div></section>
+<section><h2>Edit offers (overrides js/wd-config.js)</h2><p>JSON with any of: <code>WHOP_LINKS</code>, <code>PARTNERS</code>, <code>LOCKERS</code>, <code>OFFERS</code>, <code>GIFT_BONUS</code>. Empty <code>{}</code> = use the config file.</p><textarea id="offers"></textarea><button id="saveOffers">Save offers</button> <span id="omsg"></span></section>
+</div></main>
+<script>
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+let P=sessionStorage.getItem("wd-admin")||"";
+async function call(op,extra){const r=await fetch("/api/wd?a=admin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pass:P,op,...extra})});const d=await r.json().catch(()=>({ok:false,error:"api_unavailable"}));if(!d.ok)throw new Error(d.error);return d;}
+const tbl=(rows,cols)=>rows.length?`<table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c]&&c.endsWith("At")||c==="at"?new Date(r[c]).toLocaleString():r[c])}</td>`).join("")}</tr>`).join("")}</table>`:"<p>None yet.</p>";
+async function load(){try{const d=await call("stats");sessionStorage.setItem("wd-admin",P);document.getElementById("login").hidden=true;document.getElementById("app").hidden=false;
+document.getElementById("stats").textContent=`${d.members} members · ${d.waitlist.length} waitlist entries · ${d.codes.length} gift codes`;
+document.getElementById("signups").innerHTML=tbl(d.signups,["member","handle","email","points","credit","ref","createdAt"]);
+document.getElementById("wl").innerHTML=tbl(d.waitlist,["email","item","at"]);
+document.getElementById("codes").innerHTML=tbl(d.codes.map(c=>({...c,redeemedBy:c.redeemedBy||""})),["code","amount","note","redeemedBy","at"]);
+document.getElementById("offers").value=JSON.stringify(d.offers||{},null,2);}catch(e){document.getElementById("msg").textContent={bad_pass:"Wrong passphrase.",admin_not_configured:"Set ADMIN_PASS in Vercel env vars and redeploy.",store_not_configured:"KV (Upstash) not connected."}[e.message]||e.message;}}
+document.getElementById("login").onsubmit=e=>{e.preventDefault();P=document.getElementById("pass").value;load();};
+document.getElementById("issue").onsubmit=async e=>{e.preventDefault();try{const d=await call("issue",{amount:document.getElementById("amt").value,note:document.getElementById("note").value});document.getElementById("issued").innerHTML=`Issued <code>${esc(d.code)}</code> for $${d.amount}`;load();}catch(er){document.getElementById("issued").textContent=er.message;}};
+document.getElementById("saveOffers").onclick=async()=>{try{await call("offers",{offers:JSON.parse(document.getElementById("offers").value||"{}")});document.getElementById("omsg").textContent="Saved ✓";}catch(er){document.getElementById("omsg").textContent=er.message;}};
+if(P)load();
+</script></body></html>

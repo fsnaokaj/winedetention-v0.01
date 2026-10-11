@@ -1,9 +1,9 @@
-# Wine Detention v0.01
+# Wine Detention (winedetention.com)
 
-Live social wine shopping: buy a themed collection at one flat price, get three bottles assigned at checkout. Every bottle is full SRP — never discounted — and every assignment is worth at least what you paid.
+Pre-launch site: gift cards + pre-launch offers (Whop, non-alcohol), partner wine lockers (licensed partners sell and ship), Dynamic.xyz sign-in, Upstash KV accounts.
 
-This is a concept demo. No real wine ships and no real payment is processed. 21+.
+- `js/wd-config.js` — Whop links, partners, locker → partner mapping, gift bonus. Empty link = "Notify me".
+- `api/wd.js` — accounts, spin, quests, leaderboard, waitlist, gift codes, admin.
+- `/admin` — needs env `ADMIN_PASS`.
 
-**GitHub Pages:** https://fsnaokaj.github.io/winedetention-v0.01/  
-**Vercel:** https://winedetention.vercel.app
-
+Env vars (Vercel): `DYNAMIC_ENV_ID`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`, `ADMIN_PASS`.

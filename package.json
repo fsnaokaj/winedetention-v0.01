@@ -1,0 +1,7 @@
+{
+  "name": "winedetention",
+  "private": true,
+  "type": "module",
+  "dependencies": { "jose": "^6.1.0" },
+  "engines": { "node": ">=18" }
+}

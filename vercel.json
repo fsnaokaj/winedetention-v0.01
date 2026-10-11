@@ -1,11 +1,11 @@
 {
   "cleanUrls": true,
+  "rewrites": [
+    { "source": "/u/:h", "destination": "/index.html" },
+    { "source": "/:h([A-Za-z0-9_@]{3,21})", "destination": "/index.html" }
+  ],
   "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" }
-      ]
-    }
+    { "source": "/(.*)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" } ] },
+    { "source": "/admin", "headers": [ { "key": "X-Robots-Tag", "value": "noindex" } ] }
   ]
 }
