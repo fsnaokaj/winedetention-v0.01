@@ -17,10 +17,10 @@
 <meta property="og:title" content="Wine Detention · Pre-launch">
 <meta property="og:description" content="Gift cards, pre-launch offers and partner wine lockers. Wine sold by licensed partners. 21+.">
 <meta property="og:url" content="https://winedetention.com/">
-<meta property="og:image" content="https://winedetention.com/og-image.png">
+<meta property="og:image" content="https://winedetention.com/og-image.jpg">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://winedetention.com/og-image.png">
+<meta name="twitter:image" content="https://winedetention.com/og-image.jpg">
 <link rel="stylesheet" href="/js/wd-live.css">
 <script src="/js/wd-config.js"></script>
 <script src="/js/wd-socials.js"></script>
@@ -1676,7 +1676,9 @@
     background:#0E3386;z-index:125;margin:0;
   }
   body.has-mast .mast-band{display:block;}
-  .mast-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .mast-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;}
+  .mast-band::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(14,51,134,.92) 0%,rgba(14,51,134,.7) 38%,rgba(14,51,134,0) 70%);}
+  .mast-copy em,.mast-copy b,.mast-copy span:not(.btn){text-shadow:0 2px 6px rgba(0,0,0,.45);}
   .mast-copy{
     display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:8px;
     position:relative;z-index:2;height:100%;padding:24px;
@@ -1714,7 +1716,8 @@
     .cart-link svg{width:22px;height:22px;}
     .mast-copy .btn{padding:6px 12px;min-height:28px;font-size:12px;}
     main#app h1,main#app .page-hero h1{font-size:26px !important;}
-    .mast-band{height:200px;}
+    .mast-band{height:220px;}
+    .mast-band::after{background:linear-gradient(180deg,rgba(14,51,134,.1) 0%,rgba(14,51,134,.55) 40%,rgba(14,51,134,.9) 100%);}
     .mast-copy{padding:16px;}
     .mast-copy b{font-size:26px;}
     .offer-shot{height:188px;}
@@ -1764,12 +1767,12 @@
   </div>
 </header>
 <div class="mast-band" id="mast-band" hidden>
-  <img class="mast-art" src="img/promos/promo-meme.png" alt="">
-  <a class="mast-copy" href="#/collections">
-    <em>Launch weekend</em>
-    <b>8 lockers. $35–$350.</b>
-    <span>Pre-launch reservations · wine sold by licensed partners.</span>
-    <span class="btn btn-primary">Shop the drop</span>
+  <picture><source srcset="img/promos/promo-meme.webp" type="image/webp"><img class="mast-art" src="img/promos/promo-meme.png" alt="Cartoon wine bottles dancing on desks in a detention classroom" width="1280" height="720" fetchpriority="high"></picture>
+  <a class="mast-copy" href="#/vip">
+    <em>Detention just got a lot more fun</em>
+    <b>Pop the cork. Skip the class.</b>
+    <span>OG VIP Mystery Drops from $350 · 21+</span>
+    <span class="btn btn-primary">See the drops</span>
   </a>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Primary"></nav>
@@ -3863,7 +3866,7 @@
   }
   function renderPromoMast(){
     var r = currentRoute().split("?")[0];
-    var show = false;
+    var show = (r==="/" || r==="");
     document.body.classList.toggle("has-mast", show);
     var band = document.getElementById("mast-band");
     if (band) band.hidden = !show;
