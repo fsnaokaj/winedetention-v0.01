@@ -1,6 +1,6 @@
 /* Wine Detention API: one function, many actions.
-   GET  /api/wd?a=config | offers | lb | profile&h=
-   POST /api/wd?a=me | reroll | profile | spin | quest | redeem   (Authorization: Bearer <Dynamic JWT>)
+   GET  /api/wd?a=config | offers | lb | gw | profile&h=
+   POST /api/wd?a=me | reroll | profile | spin | quest | redeem | gwme | gwjoin | gwfollow | gwshare   (Authorization: Bearer <Dynamic JWT>)
    POST /api/wd?a=notify   (public waitlist)
    POST /api/wd?a=admin    (body.pass must equal env ADMIN_PASS) */
 import { r, pipe, obj, redisConfig } from "./_lib/redis.js";
@@ -8,6 +8,8 @@ import { verify, ENV_ID } from "./_lib/auth.js";
 import * as R from "./_lib/rules.js";
 import { randomBytes } from "crypto";
 import { cardPng, injectMeta } from "./_lib/card.js";
+import * as GW from "./_lib/giveaway.js";
+import { GIVEAWAY as GWC } from "./_lib/giveaway.config.js";
 const AV_MAX = 70000, COVERS = 12;
 
 const E = (m, s = 400) => Object.assign(new Error(m), { status: s });
@@ -28,7 +30,7 @@ async function me(sub, email, ref) {
   const member = await r("INCR", "wd:members");
   h = { handle, member, avSeed: handle + ":" + member, points: 0, credit: 0, createdAt: Date.now(), email: clean(email, 120), ref: clean(ref, 20).toLowerCase() };
   await pipe([["HSET", U(sub), ...Object.entries(h).flat()], ["ZADD", "wd:lb", 0, sub], ["ZADD", "wd:signups", Date.now(), sub]]);
-  if (h.ref && R.HANDLE_RE.test(h.ref)) { const inv = await r("GET", "wd:h:" + h.ref); if (inv && inv !== sub) { await award(inv, R.REFERRAL.inviter); await r("HINCRBY", U(inv), "refs", 1); h.points = await award(sub, R.REFERRAL.invitee); } }
+  if (h.ref && R.HANDLE_RE.test(h.ref)) { const inv = await r("GET", "wd:h:" + h.ref); if (inv && inv !== sub) { await award(inv, R.REFERRAL.inviter); await r("HINCRBY", U(inv), "refs", 1); h.points = await award(sub, R.REFERRAL.invitee); try { await GW.gwReferral(inv); } catch {} } }
   return h;
 }
 const lbList = async (n = 50) => {
@@ -58,6 +60,7 @@ export default async function handler(req, res) {
       res.setHeader("Content-Type", "text/html; charset=utf-8"); res.setHeader("Cache-Control", "public, max-age=60"); return res.status(200).send(html);
     }
     if (a === "lb") { need(); return res.status(200).json({ ok: true, board: await lbList(), members: +(await r("GET", "wd:members")) || 0 }); }
+    if (a === "gw") { need(); return res.status(200).json({ ok: true, ...(await GW.gwPublic()) }); }
     if (a === "profile" && req.method !== "POST") { need(); const hd = String(req.query.h || "").toLowerCase().replace(/^@/, ""); if (!R.HANDLE_RE.test(hd)) throw E("not_found", 404); const sub = await r("GET", "wd:h:" + hd); if (!sub) throw E("not_found", 404); const p = pub(obj(await r("HGETALL", U(sub)))); delete p.credit; delete p.welcome; return res.status(200).json({ ok: true, profile: p }); }
     if (req.method !== "POST") throw E("method", 405);
     const b = await body(req);
@@ -113,7 +116,7 @@ export default async function handler(req, res) {
     if (a === "quest") {
       const q = R.QUESTS.find((x) => x.id === b.id); if (!q) throw E("bad_quest");
       const k = `wd:q:${sub}:${day()}`; if (!(await r("HSETNX", k, q.id, 1))) throw E("already_done", 409); await r("EXPIRE", k, 172800);
-      return res.status(200).json({ ok: true, reward: q.reward, points: await award(sub, q.reward) });
+      const pts = await award(sub, q.reward); try { await GW.gwQuest(sub); } catch {} return res.status(200).json({ ok: true, reward: q.reward, points: pts });
     }
     if (a === "redeem") {
       const code = clean(b.code, 40).toUpperCase(); const raw = await r("HGET", "wd:codes", code); if (!raw) throw E("bad_code", 404);
@@ -128,6 +131,26 @@ export default async function handler(req, res) {
         const rank = R.VIP_RANK; if (!h.vip || rank.indexOf(c.tier) > rank.indexOf(h.vip)) await r("HSET", U(sub), "vip", c.tier);
         await r("ZADD", "wd:vips", Date.now(), sub); if (isB) await r("ZADD", "wd:wall", Date.now(), sub); }
       return res.status(200).json({ ok: true, amount: c.amount, base: c.base || c.amount, bonus: c.bonus || 0, tier: c.tier || "", vipNo, credit: +credit });
+    }
+    if (a === "gwme" || a === "gwjoin") {
+      let joined = false;
+      if (a === "gwjoin") {
+        const ip = String(req.headers["x-vercel-ip-country"] || req.headers["cf-ipcountry"] || "");
+        await GW.gwLocate(sub, b.country, b.region, ip);
+        joined = await GW.gwJoin(sub);
+        h = obj(await r("HGETALL", U(sub)));
+      }
+      return res.status(200).json({ ok: true, gw: await GW.gwMe(sub), me: pub(h), justJoined: joined, participant: GWC.participant });
+    }
+    if (a === "gwfollow") {
+      if (!GW.gwOpen()) throw E("giveaway_closed", 409);
+      const added = await GW.gwFollow(sub, String(b.platform || "").toLowerCase());
+      return res.status(200).json({ ok: true, added, gw: await GW.gwMe(sub) });
+    }
+    if (a === "gwshare") {
+      if (!GW.gwOpen()) throw E("giveaway_closed", 409);
+      const added = await GW.gwShare(sub);
+      return res.status(200).json({ ok: true, added, gw: await GW.gwMe(sub) });
     }
     throw E("bad_action", 404);
   } catch (e) { return res.status(e.status || 500).json({ ok: false, error: e.message || "error" }); }

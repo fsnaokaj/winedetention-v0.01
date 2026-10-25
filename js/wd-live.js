@@ -1,3 +1,4 @@
+import * as GWPage from "./wd-giveaway.js";
 /* Wine Detention live layer: Dynamic sign-in, KV accounts, partner lockers, Whop gift cards, waitlist.
    Loaded as a module after the main app script. Owns the routes listed in OWN. */
 const C = window.WD_CONFIG || {}, V = C.DYNAMIC_SDK_VERSION || "1.39.1";
@@ -5,7 +6,7 @@ const W = () => window.WD || {};
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, "");
 const $ = (s) => document.querySelector(s);
-const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|policy\/(privacy|terms)|partners|u\/.+|socials|how-it-works)$/;
+const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|giveaway|giveaways|policy\/(privacy|terms)|partners|u\/.+|socials|how-it-works)$/;
 let SRV = null, D = null, client = null, ME = null, DONE = {}, OV = null, authState = "loading", authMsg = "";
 
 /* ---------- avatars (deterministic cartoon wine glass) ---------- */
@@ -222,6 +223,22 @@ function pPolicy(k) {
     ["Terms of Service", `<p><b>Placeholder — to be finalized before launch.</b></p><p>You must be 21 or older. Wine Detention does not sell, ship or deliver alcohol. Wine purchases are fulfilled by licensed partners, who are the sellers of record and handle age verification and shipping to permitted states. Gift cards, pre-launch credits and memberships are sold via Whop and contain no alcohol. Gift card bonus credit is promotional, not cash, and may expire 12 months after issue; paid gift card value does not expire. Hall points are free, for fun and have no cash value. Welcome Spin odds are published on the spin page.</p>${dropTerms()}`];
   return shell(T[0], `<div class="wdl-card wdl-prose">${T[1]}</div>${LEGAL}`);
 }
+
+function pGiveaway() {
+  setTimeout(async () => {
+    const box = document.getElementById("wdl-gw");
+    if (!box) return;
+    try {
+      await GWPage.load(ME, api);
+      box.outerHTML = GWPage.pageHtml(ME);
+      GWPage.bind(ME, api);
+    } catch (e) {
+      box.innerHTML = `<section class="wdl"><div class="wdl-card"><h3>Giveaway loading issue</h3><p>${esc(errText(e))}</p><button class="wdl-btn" onclick="location.reload()">Retry</button></div></section>`;
+    }
+  }, 0);
+  return `<div id="wdl-gw"><section class="wdl"><div class="wdl-card"><p>Loading Founding Detention Giveaway…</p></div></section></div>`;
+}
+
 export function page(route) {
   if (route === "/") return pHome();
   if (!OWN.test(route)) return null;
@@ -236,10 +253,11 @@ export function page(route) {
   if (route === "/collections" || route === "/partners" || route.startsWith("/product/")) { setTimeout(() => location.replace("#/vip"), 0); return pVip(); }
   if (route === "/gifts/redeem") return pRedeem();
   if (route === "/vip") return pVip();
+  if (route === "/giveaway" || route === "/giveaways") return pGiveaway();
   if (route.startsWith("/gifts")) return pGifts();
   if (/^\/(cart|checkout|confirmation)$/.test(route)) return pCart();
   if (route.startsWith("/policy/")) return pPolicy(route.slice(8));
-  return pSoon({ "/live": "Live rooms", "/party": "Party", "/trade": "Trades", "/giveaways": "Giveaways" }[route] || "Coming soon");
+  return pSoon({ "/live": "Live rooms", "/party": "Party", "/trade": "Trades" }[route] || "Coming soon");
 }
 export const owns = (route) => route === "/" || OWN.test(route);
 export function bind(route) {
@@ -265,6 +283,10 @@ export function authBtn() {
 window.WDL = { page, owns, bind, authBtn, avatar, vipHero };
 /* /handle and /u/handle deep links -> SPA profile; ?ref= captures referrals */
 const qref = new URLSearchParams(location.search).get("ref"); if (qref) localStorage.setItem("wd-ref", qref.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20));
+const pathOnly = (location.pathname.replace(/\/$/, "") || "/").toLowerCase();
+if (!location.hash && /^\/(giveaway|giveaways|vip|gifts|quests|leaderboard|login|signup|party|live|spin|account|how-it-works|socials)$/.test(pathOnly)) {
+  history.replaceState(null, "", "/#" + (pathOnly === "/giveaways" ? "/giveaway" : pathOnly));
+}
 const pm = location.pathname.match(/^\/(?:u\/)?@?([a-z0-9_]{3,20})\/?$/i);
 if (pm && !location.hash) { localStorage.setItem("wd-ref", pm[1].toLowerCase()); history.replaceState(null, "", "/#/u/" + pm[1].toLowerCase()); }
 rerender(); W().paintAuth && W().paintAuth();

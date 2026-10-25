@@ -2545,7 +2545,7 @@
     heatP: "Partner lockers open at launch.",
     feedK: "HALL MONITOR WIRE",
     feedH: "Someone just got lucky.",
-    navLive:"Live", navTrade:"Import / Export", navGive:"Giveaways", navQuests:"Quests", navBoard:"Leaderboard", navSocials:"Socials",
+    navLive:"Live", navTrade:"Import / Export", navGive:"Giveaway", navQuests:"Quests", navBoard:"Leaderboard", navSocials:"Socials",
     liveK:"STREAMING IN PUBLIC", liveH:"The locker is live on 18 apps.",
     liveP:"Live rooms open at launch.",
     tradeK:"NAPA → THE WORLD", tradeH:"Import / export lanes are open.",
@@ -3818,6 +3818,7 @@
       {href:"#/gifts", match:"/gifts", kind:"gift", label:"Gifts"},
       {href:"#/live", match:"/live", kind:"live", label:t("navLive")},
       {href:"#/vip", match:"/vip", kind:"pass", label:"OG VIP"},
+      {href:"#/giveaway", match:"/giveaway", kind:"gift", label:"Giveaway"},
       {href:"#/leaderboard", match:"/leaderboard", kind:"board", label:"Board"},
       {href: currentUser ? "#/u/"+currentUser.handle : "#/login", match:"/you", kind:"you", label:"You"}
     ];
@@ -3901,7 +3902,7 @@
     if (/how it works|how does/.test(s)) return "Pick a locker: shop it at a licensed partner or reserve it. Gift cards and OG Founding VIP passes are sold here; wine is sold by licensed partners.";
     if (/drop|wine|buy|shop|sentence|locker|pinot|cabernet|chardonnay|sauvignon|bottle|allocation|rose|champagne/.test(s)) return "Eight launch lockers — rosé $35, bubbles $53, Napa cab $88, then Pinot, Chardonnay, Rutherford, mountain icon, and a $350 prestige cuvée. Floor is always the buy-in. We don’t ship alcohol in this preview.";
     if (/age|21|legal/.test(s)) return "You must be 21+. Wine Detention doesn't sell alcohol; wine purchases are fulfilled by licensed partners.";
-    if (/pt|point|pts|quest/.test(s)) return "PTS live on this device. Buys, shares, and quests add up. 40 pts bumps a jukebox request.";
+    if (/giveaway|whitening|sweep|enter free|prize/.test(s)) return "The Founding Detention Giveaway '26 is free to enter worldwide (21+). Stack entries by signing up, following @winedetention, sharing, inviting friends, and daily quests. Prizes are gift cards, whitening strips and swag — no alcohol. Open Giveaway in the menu.";\n    if (/pt|point|pts|quest/.test(s)) return "Hall points are free and for fun. Welcome Spin, daily quests, invites and the giveaway badge all add points. Open Quests or Giveaway.";
     if (/ship|deliver|hk|napa/.test(s)) return "We sketch Napa lanes to Hong Kong, Tokyo, London, and Dubai. Shipping stays a sketch until a licensed partner is live.";
     if (/support|help|hi|hey|hello|thanks|thank/.test(s)) return conciergeHello();
     return "I can help with today’s drop, gifts, profiles, the radio, points, or your pass. Pick a button or type a question.";
@@ -4063,7 +4064,7 @@
           '<li><a href="#/vip">VIP drops</a></li>'+
           '<li><a href="#/gifts">Gift cards</a></li>'+
           '<li><a href="#/gifts/redeem">Redeem a gift</a></li>'+
-          '<li><a href="#/giveaways">'+t("navGive")+'</a></li>'+
+          '<li><a href="#/giveaway">'+t("navGive")+'</a></li>'+
           '<li><a href="#/quests">'+t("navQuests")+'</a></li>'+
           '<li><a href="#/cart">'+t("footCart")+'</a></li>'+
         '</ul></div>'+
@@ -5420,6 +5421,7 @@
   setInterval(updateLiveChrome, 1000);
 })();
 </script>
+<script src="/js/promo-bar.js?v=1" defer></script>
 <script type="module" src="/js/wd-live.js"></script>
 </body>
 </html>

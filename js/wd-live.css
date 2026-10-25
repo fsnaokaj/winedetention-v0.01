@@ -121,3 +121,52 @@ label.wdl-btn{cursor:pointer}
 .wd-soc{display:flex;flex-wrap:wrap;gap:10px;padding:6px 0 14px}
 .wd-soc a{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--c);border:1.5px solid #E8E8EA;box-shadow:0 2px 6px rgba(0,0,0,.06)}
 .wd-soc a:hover{background:var(--c);color:#fff}
+
+/* —— Founding Detention Giveaway —— */
+.gw-page{padding-bottom:48px}
+.gw-tabs{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:20;background:#fff;padding:10px 0;border-bottom:1px solid #F1F1F2;margin:0 0 14px}
+.gw-tabs a{padding:8px 12px;border-radius:999px;border:1.5px solid #E8E8EA;color:#0E3386;font-weight:700;text-decoration:none;font-size:13px}
+.gw-tabs a:hover,.gw-tabs a.on{background:#FFF1F2;border-color:#F5C2C7}
+.gw-hero{text-align:center;padding:8px 4px 20px}
+.gw-hero h1{font-family:var(--font-bang,Anton,sans-serif);font-weight:400;font-size:clamp(32px,9vw,56px);color:#0E3386;line-height:1.05;margin:8px 0}
+.gw-hero .lead{max-width:640px;margin:0 auto 12px;color:#4B5563;font-size:16px}
+.gw-npn{background:#FFFBEB;border:1.5px solid #F6E3B4;border-radius:14px;padding:10px 14px;margin:12px auto;max-width:640px;font-size:13.5px;color:#3D2E12;text-align:left}
+.gw-cd{display:flex;gap:8px;justify-content:center;margin:14px 0}
+.gw-cd div{min-width:64px;background:#fff;border:1.5px solid #F5C2C7;border-radius:14px;padding:8px 6px;box-shadow:0 6px 16px rgba(204,52,51,.08)}
+.gw-cd b{display:block;font-family:var(--font-bang,Anton,sans-serif);font-size:28px;color:#CC3433;font-weight:400}
+.gw-cd small{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#73747B}
+.gw-stats{display:flex;gap:18px;justify-content:center;margin:12px 0}
+.gw-stats div{text-align:center}
+.gw-stats b{display:block;font-family:var(--font-bang,Anton,sans-serif);font-size:32px;color:#0E3386;font-weight:400}
+.gw-stats span{font-size:12px;color:#73747B;text-transform:uppercase;letter-spacing:.06em}
+.gw-you{display:inline-block;margin:8px auto 12px;padding:8px 14px;border-radius:999px;background:#F3F6FF;border:1.5px solid #B9C7EE;font-weight:700;color:#0E3386}
+.gw-sec{margin:28px 0}
+.gw-sec .kicker{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#CC3433}
+.gw-sec h2{font-family:var(--font-bang,Anton,sans-serif);font-weight:400;font-size:clamp(26px,6vw,40px);color:#0E3386;margin:4px 0 8px}
+.gw-sec .lead{color:#4B5563;max-width:640px}
+.gw-stack{display:grid;gap:12px;margin-top:14px}
+.gw-card{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fff;border:1.5px solid #E8E8EA;border-radius:18px;padding:14px}
+.gw-card.done{background:#F0FDF4;border-color:#86EFAC}
+.gw-plus{flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#CC3433,#F5C451);color:#fff;font-weight:900;font-size:15px}
+.gw-card h3{margin:0 0 4px;font-size:16px;color:#0E3386}
+.gw-card p{margin:0;font-size:13.5px;color:#73747B}
+.gw-card>div:nth-child(2){flex:1 1 180px;min-width:0}
+.gw-loc{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.gw-loc label{font-weight:700;font-size:13px;color:#0E3386}
+.gw-loc select{display:block;margin-top:4px;min-height:44px;min-width:180px;padding:8px 12px;border-radius:12px;border:1.5px solid #C9D3EA;font-size:16px;background:#fff}
+.gw-prizes{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px;margin-top:12px}
+.gw-prize{background:#fff;border:1.5px solid #E8E8EA;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(14,51,134,.06)}
+.gw-prize.gw-tier-grand,.gw-prize.gw-tier-featured{border-color:#F5C2C7;background:linear-gradient(180deg,#fff,#FFF1F2)}
+.gw-prize.gw-tier-vip{border-color:#C9A962;background:linear-gradient(180deg,#FFFDF5,#FEF3C7)}
+.gw-place{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#CC3433}
+.gw-prize h3{margin:6px 0;font-size:17px;color:#0E3386}
+.gw-arv{margin-top:8px;font-size:13px;color:#73747B}
+.gw-arv b{color:#0E3386;font-size:18px}
+.gw-tbl{overflow-x:auto;background:#fff;border:1.5px solid #E8E8EA;border-radius:18px;padding:8px}
+.gw-tbl table{width:100%;border-collapse:collapse;font-size:14px}
+.gw-tbl th,.gw-tbl td{text-align:left;padding:10px 8px;border-bottom:1px solid #F1F1F2}
+.gw-tbl .muted{color:#73747B;text-align:center}
+.gw-rules{background:#fff;border:1.5px solid #E8E8EA;border-radius:18px;padding:16px;font-size:14px;line-height:1.55;color:#161823}
+.gw-rules h3{color:#0E3386}
+.gw-rules ul{padding-left:18px}
+@media(max-width:760px){body.has-gwbar .gw-page{padding-bottom:110px}}
