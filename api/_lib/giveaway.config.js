@@ -14,8 +14,9 @@ export const GIVEAWAY = {
     cta: "Enter free →",
   },
   startsAt: "2026-10-25T14:00:00Z",
-  endsAt: "2026-11-27T04:59:00Z", // Thu Nov 26 2026, 11:59 PM ET
-  durationDays: 32,
+  endsAt: "2027-02-15T06:59:00Z", // Sun Feb 14 2027, 11:59 PM Arizona time (extended ~90 days)
+  endsLabel: "Sun Feb 14, 2027 · 11:59 PM Arizona time (MST)",
+  durationDays: 113,
   sponsor: "Wine Detention",
   sponsorEmail: "hello@winedetention.com",
   drawWithinDays: 7,

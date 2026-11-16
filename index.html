@@ -2673,7 +2673,7 @@
   ];
 
   var GIVEAWAYS = [
-    {id:"fd26", name:"Founding Detention Giveaway '26", cost:0, prize:"Gift cards, whitening strips & Detention swag — no alcohol. Enter free on Giveaway.", ends:"Nov 26"},
+    {id:"fd26", name:"Founding Detention Giveaway '26", cost:0, prize:"Gift cards, whitening strips & Detention swag — no alcohol. Enter free on Giveaway.", ends:"Feb 14"},
     {id:"crew", name:"Whole-hall crew prize", cost:80, prize:"If 100 people enter, everyone who entered gets 50 pts back plus a merch stamp", ends:"always on"}
   ];
 
@@ -3340,7 +3340,7 @@
     render();
   }
   function renderCartCount(){
-    var n = cartCount();
+    var n = (window.WDL && WDL.bagCount) ? WDL.bagCount() : cartCount();
     var el = document.getElementById("cart-count");
     if (!el) return;
     el.textContent = n ? String(n) : "";
@@ -3436,12 +3436,8 @@
       return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];
     });
   }
-  function loadUsers(){
-    try { return JSON.parse(localStorage.getItem("wd-users")||"[]"); } catch(e){ return []; }
-  }
-  function saveUsers(list){
-    try { localStorage.setItem("wd-users", JSON.stringify(list)); } catch(e){}
-  }
+  function loadUsers(){ return []; }
+  function saveUsers(){}
   function vibeHue(v){ return VIBES[(Number(v)||0) % VIBES.length]; }
   function initials(name){
     var p = String(name||"?").trim().split(/\s+/);
@@ -3603,41 +3599,7 @@
   }
   function setSession(user){
     currentUser = user ? sessionFromUser(user) : null;
-    try {
-      if (currentUser) localStorage.setItem("wd-session", JSON.stringify(currentUser));
-      else localStorage.removeItem("wd-session");
-    } catch(e){}
     renderAuthBtn();
-  }
-  function signupUser(name, email, pass){
-    email = (email||"").trim().toLowerCase();
-    name = (name||"").trim();
-    if (!name || !email || !pass || pass.length<4) return "Name, email, and a 4+ character password.";
-    var users = loadUsers();
-    if (users.some(function(u){ return u.email===email; })) return "That email already has a hall pass. Log in.";
-    var rec = {
-      name:name, email:email, pass:btoa(unescape(encodeURIComponent(pass))),
-      handle:mintHandle(name, email), bio:"New in the hall.", city:"",
-      vibe:Math.abs(hashStr(email))%8, followers:0
-    };
-    users.push(rec);
-    saveUsers(users);
-    setSession(rec);
-    return "";
-  }
-  function loginUser(email, pass){
-    email = (email||"").trim().toLowerCase();
-    var users = loadUsers();
-    var encoded = btoa(unescape(encodeURIComponent(pass||"")));
-    var hit = users.filter(function(u){ return u.email===email && u.pass===encoded; })[0];
-    if (!hit) return "No match. Check the email/password or sign up.";
-    ensureUserProfile(hit);
-    users.forEach(function(u){
-      if (u.email===hit.email){ u.handle=hit.handle; u.bio=hit.bio; u.city=hit.city; u.vibe=hit.vibe; }
-    });
-    saveUsers(users);
-    setSession(hit);
-    return "";
   }
   function logoutUser(){
     setSession(null);
@@ -3645,24 +3607,8 @@
     navigate("/");
   }
 
-  function pageAuth(mode){
-    var isUp = mode==="signup";
-    return '<div class="auth-card">'+
-      '<button type="button" class="auth-close" id="auth-close" aria-label="Close">×</button>'+
-      '<h1>'+(isUp?"Join the hall":"Log in")+'</h1>'+
-      '<p style="margin-bottom:18px;color:var(--page-muted);">'+(isUp?"You get a public @handle — like TikTok, not a wine-club card. ":"Welcome back. This demo keeps your pass on this device.")+'</p>'+
-      '<form id="auth-form">'+
-        (isUp?'<div class="form-row"><label for="auth-name">Name</label><input id="auth-name" required autocomplete="name"></div>':'')+
-        '<div class="form-row"><label for="auth-email">Email</label><input id="auth-email" type="email" required autocomplete="email"></div>'+
-        '<div class="form-row"><label for="auth-pass">Password</label><input id="auth-pass" type="password" required minlength="4" autocomplete="'+(isUp?"new-password":"current-password")+'"></div>'+
-        '<button class="btn btn-primary btn-block" type="submit">'+(isUp?"Sign up":"Log in")+'</button>'+
-        '<div class="auth-msg" id="auth-msg"></div>'+
-      '</form>'+
-      (isUp
-        ? '<p class="auth-switch">Already have a pass? <a href="#/login">Log in</a></p>'
-        : '<p class="auth-switch">New to Wine Detention? <a href="#/signup">Sign up</a></p>')+
-    '</div>';
-  }
+  /* Legacy on-device password login removed: sign-in is handled by js/wd-live.js (#/login). */
+  function pageAuth(){ return '<div class="content-block"><p><a class="btn btn-primary" href="#/login">Sign in</a></p></div>'; }
   function profileEditHTML(pro){
     var vibes = VIBES.map(function(h,i){
       return '<button type="button" data-vibe="'+i+'" class="'+(Number(pro.vibe)===i?"on":"")+'" style="--h:'+h+'" aria-label="Color '+(i+1)+'"></button>';
@@ -3814,12 +3760,12 @@
     var items = [
       {href:"#/", match:"/", kind:"home", label:t("navHome")},
       {href:"#/party", match:"/party", kind:"party", label:"Party"},
-      {href:"#/gifts", match:"/gifts", kind:"gift", label:"Gifts"},
+      {href:"#/shop", match:"/shop", kind:"gift", label:"Shop"},
       {href:"#/live", match:"/live", kind:"live", label:t("navLive")},
       {href:"#/vip", match:"/vip", kind:"pass", label:"OG VIP"},
       {href:"#/giveaway", match:"/giveaway", kind:"gift", label:"Giveaway"},
       {href:"#/leaderboard", match:"/leaderboard", kind:"board", label:"Board"},
-      {href: currentUser ? "#/u/"+currentUser.handle : "#/login", match:"/you", kind:"you", label:"You"}
+      {href:"#/account", match:"/account", kind:"you", label:"You"}
     ];
     var links = items.map(function(item){
       return '<a class="rail-link'+(railActive(route, item.match)?" on":"")+'" href="'+item.href+'">'+tabSvg(item.kind)+'<span>'+item.label+'</span></a>';
@@ -3985,7 +3931,9 @@
     var auth = currentUser
       ? [{href:"#/account", label:"Account"}]
       : [{href:"#/login", label:"Log in"}];
-    return auth.concat([
+    return [{href:"#/account", label:"My profile"}].concat([
+      {href:"#/shop", label:"🎟️ Hall Passes & drops"},
+      {href:"#/orders", label:"My orders"},
       {href:"#/gifts", label:"Shop gift cards"},
       {href:"#/gifts/redeem", label:"Redeem gift card"},
       {href:"#/gifts/mine", label:"My gifts"},
@@ -4061,6 +4009,7 @@
           '<li><a href="#/contact">'+t("footContact")+'</a></li>'+
         '</ul></div>'+
         '<div><h4>'+t("footShop")+'</h4><ul>'+
+          '<li><a href="#/shop">Hall Passes</a></li>'+
           '<li><a href="#/vip">VIP drops</a></li>'+
           '<li><a href="#/gifts">Gift cards</a></li>'+
           '<li><a href="#/gifts/redeem">Redeem a gift</a></li>'+
@@ -4906,27 +4855,7 @@
     navigate(back);
   }
 
-  function bindAuth(route){
-    var overlay = document.getElementById("auth-overlay");
-    var aform = document.getElementById("auth-form");
-    var xc = document.getElementById("auth-close");
-    if (xc) xc.onclick = closeAuthOverlay;
-    if (overlay) overlay.onclick = function(e){ if (e.target===overlay) closeAuthOverlay(); };
-    if (aform) aform.addEventListener("submit", function(e){
-      e.preventDefault();
-      var msg = route==="/signup"
-        ? signupUser(document.getElementById("auth-name").value, document.getElementById("auth-email").value, document.getElementById("auth-pass").value)
-        : loginUser(document.getElementById("auth-email").value, document.getElementById("auth-pass").value);
-      var box = document.getElementById("auth-msg");
-      if (msg){ if (box) box.textContent = msg; return; }
-      showToast(route==="/signup" ? "Hall pass created." : "You're in.");
-      var next = giftReturnTo || lastContentRoute || "/";
-      if (next==="/login" || next==="/signup") next = "/";
-      if (route==="/signup" && currentUser && currentUser.handle) next = "/u/"+currentUser.handle;
-      giftReturnTo = "";
-      navigate(next);
-    });
-  }
+  function bindAuth(){}
 
   function render(){
     var route = currentRoute().split("?")[0];
@@ -5323,7 +5252,6 @@
       localStorage.setItem("wd-farm", String(farmCount));
       localStorage.setItem("wd-gate", gateShown ? "1" : "0");
       localStorage.setItem("wd-nowbar", nowbarOn ? "1" : "0");
-      if (currentUser) localStorage.setItem("wd-session", JSON.stringify(currentUser));
     } catch (e) {}
   }
 
@@ -5341,11 +5269,8 @@
       farmCount = parseInt(localStorage.getItem("wd-farm")||"0",10)||0;
       if (localStorage.getItem("wd-gate")==="1") gateShown = true;
       if (localStorage.getItem("wd-nowbar")==="0") nowbarOn = false;
-      var sess = JSON.parse(localStorage.getItem("wd-session")||"null");
-      if (false && sess && sess.email){
-        var hit = loadUsers().filter(function(u){ return u.email===sess.email; })[0];
-        currentUser = sessionFromUser(hit || sess);
-      }
+      /* purge the old demo password store (base64 "passwords") from this device */
+      localStorage.removeItem("wd-session"); localStorage.removeItem("wd-users");
     } catch (e) {}
     loadGifts();
     loadLastOrder();

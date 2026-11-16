@@ -34,7 +34,7 @@ function rules(c) {
   <p><b>1. NO PURCHASE NECESSARY TO ENTER OR WIN.</b> A purchase or payment of any kind will not increase your chances of winning. Void where prohibited.</p>
   <p><b>2. Sponsor.</b> ${esc(c.sponsor)}, contact ${esc(c.sponsorEmail)}. Promotion runs on winedetention.com.</p>
   <p><b>3. Eligibility (worldwide, 21+).</b> Open to legal residents of any country or territory who are at least ${el.minAge} years old or the age of majority where they live, if older. Void in ${esc(excl.join("; "))}; and ${esc(el.otherExcluded)}. Must be able to accept delivery of non-alcohol prizes. This brand is alcohol-adjacent; entrants must meet the site age gate (21+).</p>
-  <p><b>4. Entry period.</b> Starts ${new Date(c.startsAt).toUTCString()} and ends ${new Date(c.endsAt).toUTCString()} (Thu Nov 26, 2026, 11:59 PM ET).</p>
+  <p><b>4. Entry period.</b> Starts ${new Date(c.startsAt).toUTCString()} and ends ${new Date(c.endsAt).toUTCString()} (${esc(c.endsLabel || "")}).</p>
   <p><b>5. How to enter (all free).</b> (a) Create a free Wine Detention account: +${e.account} entry. (b) Follow @winedetention on X: +${e.followX} (self-reported). (c) Follow @winedetention on TikTok: +${e.followTikTok} (self-reported). (d) Share your profile link once per day: +${e.share}. (e) Each friend who signs up with your link: +${e.referral} (verified, max ${e.referralCap}). (f) Complete daily quests: +${e.quest} each (max ${e.questDailyCap}/day). Paid products never add entries.</p>
   <p><b>6. Prizes &amp; ARV.</b> Total approximate retail value of all prizes: <b>${money(D.totalArv)}</b>. Prize list:</p><ul>${prizeLines}</ul>
   <p><b>No alcohol.</b> No wine, beer, spirits or any alcoholic beverage is awarded as a prize. Gift cards and VIP Mystery Drop credit are store credit only (not cash, not alcohol). Third-party product names identify prizes only; this promotion is not sponsored, endorsed or administered by those brands.</p>
@@ -86,7 +86,7 @@ function render() {
     <p class="lead">Win up to a <b>$350 gift card</b>, professional <b>teeth whitening strips</b>, VIP Mystery Drop credit and Detention swag — ${money(D.totalArv)} in published ARV. Everyone who enters gets a badge and ${c.participant.points} hall points.</p>
     ${NPN()}
     <div class="gw-cd" id="gwCd">${cdHtml(D.end, D.start)}</div>
-    <p class="wdl-fine">Entries close Nov 26, 2026 · 11:59 PM ET</p>
+    <p class="wdl-fine">Entries close ${esc(c.endsLabel || "")}</p>
     <div class="gw-stats"><div><b id="gwTotal">${fmt(D.total)}</b><span>entries</span></div><div><b id="gwEnt">${fmt(D.entrants)}</b><span>entrants</span></div></div>
     ${you}
     ${open ? (ME ? `<a class="wdl-btn" href="#gw-enter">Stack free entries</a>` : `<a class="wdl-btn" href="#/login">Create account · enter free</a>`) : `<p class="wdl-card">This giveaway is closed.</p>`}

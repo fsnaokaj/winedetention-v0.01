@@ -3,7 +3,9 @@
    No alcohol is sold on winedetention.com. Wine is sold and shipped
    by licensed partners. Whop sells only non-alcohol items:
    gift cards, pre-launch credits and memberships.
-   Leave a link "" and that item shows "Notify me" (saved to the waitlist).
+   Hall Passes, VIP drops and gift cards are sold through the bag (js/wd-catalog.js +
+   server-created Whop checkout). WHOP_LINKS below is only a legacy fallback for items
+   that are NOT in the catalog; leave "" to show "Notify me".
    Admin (/admin) can override offers without a deploy.
    ============================================================ */
 window.WD_CONFIG = {

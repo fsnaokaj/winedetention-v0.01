@@ -1,13 +1,17 @@
 import * as GWPage from "./wd-giveaway.js";
-/* Wine Detention live layer: Dynamic sign-in, KV accounts, partner lockers, Whop gift cards, waitlist.
+import * as Shop from "./wd-shop.js";
+import { bannerSvg, qrSvg } from "./wd-art.js";
+/* Wine Detention live layer: sign-in (Dynamic headless SDK, never named in the UI), KV accounts, profiles,
+   shop (wd-shop.js: bag, Whop checkout, stock, live chat), giveaway, waitlist.
    Loaded as a module after the main app script. Owns the routes listed in OWN. */
 const C = window.WD_CONFIG || {}, V = C.DYNAMIC_SDK_VERSION || "1.39.1";
 const W = () => window.WD || {};
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\.00$/, "");
 const $ = (s) => document.querySelector(s);
-const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|giveaway|giveaways|policy\/(privacy|terms)|partners|u\/.+|socials|how-it-works)$/;
-let SRV = null, D = null, client = null, ME = null, DONE = {}, OV = null, authState = "loading", authMsg = "";
+const OWN = /^\/(login|signup|account|spin|quests|leaderboard|collections|product\/.+|cart|checkout|confirmation|gifts(\/.*)?|vip|giveaway|giveaways|policy\/(privacy|terms)|partners|u\/.+|socials|how-it-works|shop|hall-passes|drop\/[a-z0-9]+|orders|live)$/;
+let SRV = null, D = null, client = null, ME = null, DONE = {}, MDONE = {}, OV = null, authState = "loading", authMsg = "";
+const padNo = (n) => "#" + String(+n || 0).padStart(4, "0");
 
 /* ---------- avatars (deterministic cartoon wine glass) ---------- */
 const hash = (s) => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
@@ -27,9 +31,9 @@ async function api(a, body, get) {
   const headers = { "Content-Type": "application/json" }; if (client && client.token) headers.Authorization = "Bearer " + client.token;
   const r = await fetch("/api/wd?a=" + a + (get || ""), body === undefined ? { headers } : { method: "POST", headers, body: JSON.stringify(body || {}) });
   let d; try { d = await r.json(); } catch { d = { ok: false, error: "api_unavailable" }; }
-  if (!r.ok || !d.ok) throw Object.assign(new Error(d.error || "error"), { status: r.status }); return d;
+  if (!r.ok || !d.ok) throw Object.assign(new Error(d.error || "error"), { status: r.status, data: d }); return d;
 }
-const ERR = { store_not_configured: "Accounts database isn't connected yet (KV not configured). Try again soon.", auth_not_configured: "Accounts are opening soon.", already_spun: "You already took your Welcome Spin.", already_done: "Already claimed today. Come back tomorrow.", handle_taken: "That handle is taken.", bad_handle: "Handles are 3–20 letters, numbers or _.", bad_code: "That code wasn't found.", code_used: "That code was already redeemed.", bad_email: "Enter a valid email.", api_unavailable: "Service unavailable. Try again soon." };
+const ERR = { needs_more_auth: "Almost there: finish the sign-in step, then try again.", invalid_token: "Your sign-in expired. Sign in again.", not_yet: "Not done yet. Finish the task first.", store_not_configured: "Accounts are opening soon. Try again shortly.", auth_not_configured: "Accounts are opening soon.", already_spun: "You already took your Welcome Spin.", already_done: "Already claimed today. Come back tomorrow.", handle_taken: "That handle is taken.", bad_handle: "Handles are 3–20 letters, numbers or _.", bad_code: "That code wasn't found.", code_used: "That code was already redeemed.", bad_email: "Enter a valid email.", api_unavailable: "Service unavailable. Try again soon." };
 const errText = (e) => ERR[e && e.message] || (e && e.message) || "Something went wrong";
 const toast = (m) => (W().toast ? W().toast(m) : alert(m));
 const rerender = () => W().render && W().render();
@@ -38,9 +42,11 @@ const rerender = () => W().render && W().render();
 const cfg = () => { const o = OV || {}; return { WHOP: { ...(C.WHOP_LINKS || {}), ...(o.WHOP_LINKS || {}) }, PARTNERS: o.PARTNERS || C.PARTNERS || [], LOCKERS: { ...(C.LOCKERS || {}), ...(o.LOCKERS || {}) }, OFFERS: o.OFFERS || C.OFFERS || [], VIP: o.VIP_TIERS || C.VIP_TIERS || [], MORE: o.MORE_DROPS || C.MORE_DROPS || [], BUNDLE: o.VIP_BUNDLE || C.VIP_BUNDLE, BONUS: o.GIFT_BONUS || C.GIFT_BONUS || { pct: 0 } }; };
 const GIFTS = [175, 350, 500, 1000];
 const vipFlair = (m) => { if (!m || !m.vip) return ""; const t = ([...cfg().VIP, ...cfg().MORE, { ...(cfg().BUNDLE || {}), theme: "champagne" }].find((x) => x.key === m.vip) || {}); return `<span class="wdl-flair wdl-th-${esc(t.theme || "pass")}">${esc(t.emoji || "⭐")} OG Founding VIP #${m.vipNo} · ${esc(t.name || "")}</span>`; };
+const BAGKEY = (key) => key.replace(/^gift-(\d+)$/, "gift$1");
 function buyBtn(key, label) {
+  const k = BAGKEY(key); if (Shop.sku && Shop.sku(k)) return Shop.stockLine(k) + Shop.ctl(k);
   const url = cfg().WHOP[key];
-  return url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">${esc(label || "Buy with card")}</a>` : `<button class="wdl-btn ghost" data-notify="${esc(key)}">Notify me</button>`;
+  return url ? `<a class="wdl-btn" href="${esc(url)}" target="_blank" rel="noopener">${esc(label || "Buy now")}</a>` : `<button class="wdl-btn ghost" data-notify="${esc(key)}">Notify me</button>`;
 }
 function partnerOf(slug) { const L = cfg().LOCKERS[slug] || {}; const p = cfg().PARTNERS.find((x) => x.id === L.partner); return { L, p }; }
 function refUrl(u) { if (!u) return ""; try { const x = new URL(u); if (ME) x.searchParams.set("ref", ME.handle); else x.searchParams.set("ref", "winedetention"); return x.toString(); } catch { return ""; } }
@@ -49,18 +55,20 @@ function refUrl(u) { if (!u) return ""; try { const x = new URL(u); if (ME) x.se
 async function bootAuth() {
   try { SRV = await api("config", undefined); } catch (e) { SRV = { dynamicEnvId: null, store: false, welcome: [], quests: [] }; }
   try { OV = (await api("offers")).overrides; } catch {}
-  if (!SRV.dynamicEnvId || !SRV.store) { authState = "soon"; authMsg = SRV.dynamicEnvId ? "Accounts database not configured yet." : "Sign-in not configured yet."; rerender(); return; }
+  Shop.init({ api, me: () => ME, setMe: (m) => { if (m) { ME = m; W().paintAuth && W().paintAuth(); } }, srv: () => SRV || {}, toast, av, needLogin, confetti, errText });
+  if (!SRV.dynamicEnvId || !SRV.store) { authState = "soon"; authMsg = ""; rerender(); return; }
   try {
     const [core, evm] = await Promise.all([import(`https://esm.sh/@dynamic-labs-sdk/client@${V}`), import(`https://esm.sh/@dynamic-labs-sdk/evm@${V}`).catch(() => null)]);
     D = core; client = D.createDynamicClient({ autoInitialize: false, environmentId: SRV.dynamicEnvId, metadata: { name: "Wine Detention", universalLink: location.origin } });
     evm && evm.addEvmExtension && evm.addEvmExtension();
     await D.initializeClient(); authState = "ready";
+    try { const u = new URL(location.href); if (await D.detectSocialRedirectUrl({ url: u })) { await D.completeSocialRedirect({ url: u }); D.removeDynamicOauthParamsFromUrl && D.removeDynamicOauthParamsFromUrl(); const back = sessionStorage.getItem("wd-after-login"); sessionStorage.removeItem("wd-after-login"); history.replaceState(null, "", location.pathname + (back || "#/account")); } } catch (e) { authMsg = "Sign-in didn't finish. Try again."; }
     if (D.isSignedIn()) await loadMe();
   } catch (e) { authState = "error"; authMsg = String((e && e.message) || e); console.warn("Dynamic init failed", e); }
   rerender();
 }
 async function loadMe() {
-  try { const d = await api("me", { ref: localStorage.getItem("wd-ref") || "" }); ME = d.me; DONE = d.done || {}; localStorage.removeItem("wd-ref"); }
+  try { const d = await api("me", { ref: localStorage.getItem("wd-ref") || "" }); ME = d.me; DONE = d.done || {}; MDONE = d.milestones || {}; localStorage.removeItem("wd-ref"); Shop.syncOnLogin(); }
   catch (e) { ME = null; authMsg = errText(e); }
   W().paintAuth && W().paintAuth();
 }
@@ -68,44 +76,59 @@ async function logout() { ME = null; try { D && (await D.logout()); } catch {} r
 
 /* ---------- pages ---------- */
 const shell = (title, inner, sub) => `<section class="wdl"><header class="wdl-head"><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</header>${inner}</section>`;
-const LEGAL = `<p class="wdl-fine">Wine purchases are fulfilled by licensed partners. Must be 21+. Hall points are free, for fun and have no cash value.</p>`;
-const needLogin = (what) => authState === "soon" ? `<div class="wdl-card"><h3>Accounts opening soon</h3><p class="wdl-fine">${esc(authMsg)}</p><p>Sign-in launches shortly. Join the list and we'll tell you when ${esc(what)} opens.</p>${notifyForm("accounts")}</div>` : `<div class="wdl-card"><h3>Sign in to ${esc(what)}</h3><p>Free. Email code or wallet, powered by Dynamic.</p><a class="wdl-btn" href="#/login">Sign in / sign up</a></div>`;
+const LEGAL = `<p class="wdl-fine">Must be 21+. Nothing sold on this site is alcohol. Hall points are free, for fun and have no cash value.</p>`;
+const needLogin = (what) => authState === "soon" ? `<div class="wdl-card"><h3>Accounts opening soon</h3><p>Sign-in launches shortly. Join the list and we'll tell you when ${esc(what)} opens.</p>${notifyForm("accounts")}</div>` : `<div class="wdl-card"><h3>Sign in to ${esc(what)}</h3><p>Free and quick: we email you a 6-digit code. No password to remember.</p><a class="wdl-btn" href="#/login" onclick="sessionStorage.setItem('wd-after-login', location.hash)">Sign in / sign up</a></div>`;
 const notifyForm = (item) => `<form class="wdl-notify" data-item="${esc(item)}"><input type="email" required placeholder="you@email.com" aria-label="Email"><button class="wdl-btn">Notify me</button></form>`;
 
 function pLogin() {
-  if (ME) return shell("You're in", `<div class="wdl-card wdl-center">${av(ME, 88)}<h3>@${esc(ME.handle)}</h3><p>Member #${ME.member}</p><a class="wdl-btn" href="#/account">My account</a> <button class="wdl-btn ghost" data-logout>Log out</button></div>`);
+  if (ME) return shell("You're in", `<div class="wdl-card wdl-center">${av(ME, 88)}<h3>@${esc(ME.handle)}</h3><p>Member ${padNo(ME.member)}</p><a class="wdl-btn" href="#/account">My profile</a> <button class="wdl-btn ghost" data-logout>Log out</button></div>`);
   if (authState === "soon") return shell("Accounts opening soon", needLogin("your hall pass"));
   if (authState === "loading") return shell("Sign in", `<div class="wdl-card"><p>Loading sign-in…</p></div>`);
-  if (authState === "error") return shell("Sign in", `<div class="wdl-card"><h3>Sign-in is having trouble</h3><p class="wdl-fine">${esc(authMsg)}</p>${notifyForm("accounts")}</div>`);
+  if (authState === "error") return shell("Sign in", `<div class="wdl-card"><h3>Sign-in is having a moment</h3><p>Try again in a minute, or join the list and we'll ping you.</p>${notifyForm("accounts")}</div>`);
   return shell("Get your hall pass", `<div class="wdl-card wdl-auth">
-   <div data-step="email"><p>Free. You get a member number, a random @handle and a Welcome Spin for hall points.</p><form id="wdl-email" class="wdl-notify"><input id="wdl-em" type="email" required placeholder="you@email.com" autocomplete="email" aria-label="Email"><button class="wdl-btn">Send code</button></form>
-   <div class="wdl-or">or connect a wallet</div><div id="wdl-wallets" class="wdl-wallets"></div></div>
-   <div data-step="otp" hidden><p>Enter the 6-digit code sent to <b id="wdl-to"></b></p><form id="wdl-otp" class="wdl-notify"><input id="wdl-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" aria-label="Code"><button class="wdl-btn">Verify</button></form></div>
-   <p id="wdl-msg" class="wdl-msg" role="status"></p><p class="wdl-fine">By continuing you confirm you're 21+ and agree to the <a href="#/policy/terms">Terms</a> and <a href="#/policy/privacy">Privacy Policy</a>. Login by Dynamic.</p></div>`);
+   <div data-step="email"><p>Free. You get a member number, a random @handle, a fresh profile pic and a Welcome Spin for hall points.</p><form id="wdl-email" class="wdl-notify"><input id="wdl-em" type="email" required placeholder="you@email.com" autocomplete="email" aria-label="Email"><button class="wdl-btn">Email me a code</button></form>
+   <div id="wdl-social" class="wdl-wallets"></div>
+   <details class="wdl-more" id="wdl-more" hidden><summary>More ways to sign in</summary><div id="wdl-wallets" class="wdl-wallets"></div></details></div>
+   <div data-step="otp" hidden><p>Enter the 6-digit code sent to <b id="wdl-to"></b></p><form id="wdl-otp" class="wdl-notify"><input id="wdl-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" aria-label="Code"><button class="wdl-btn">Let me in</button></form><button class="wdl-btn ghost" id="wdl-back" type="button">Use a different email</button></div>
+   <p id="wdl-msg" class="wdl-msg" role="status">${esc(authMsg)}</p><p class="wdl-fine">By continuing you confirm you're 21+ and agree to the <a href="#/policy/terms">Terms</a> and <a href="#/policy/privacy">Privacy Policy</a>.</p></div>`);
 }
+const SOCIAL = { google: "Continue with Google", apple: "Continue with Apple", twitter: "Continue with X", discord: "Continue with Discord", tiktok: "Continue with TikTok" };
 function bindLogin() {
   if (!D || ME || authState !== "ready") return;
   const msg = (t) => { const m = $("#wdl-msg"); if (m) m.textContent = t; };
+  const nice = (err) => { const m = String((err && err.message) || err || ""); return /rate|too many/i.test(m) ? "Too many tries. Wait a minute." : /invalid|incorrect|expired/i.test(m) ? "That code didn't work. Check it and try again." : "Something went sideways. Try again."; };
   let ver = null, email = "";
-  const done = async () => { msg("Signed in. Setting up your hall pass…"); await loadMe(); location.hash = ME && ME.welcome == null ? "#/spin" : "#/account"; };
-  $("#wdl-email").onsubmit = async (e) => { e.preventDefault(); email = $("#wdl-em").value.trim(); msg("Sending code…"); try { ver = await D.sendEmailOTP({ email }); $("#wdl-to").textContent = email; document.querySelector('[data-step="email"]').hidden = true; document.querySelector('[data-step="otp"]').hidden = false; msg("Check your inbox (and spam)."); } catch (err) { msg(err.message || String(err)); } };
-  $("#wdl-otp").onsubmit = async (e) => { e.preventDefault(); msg("Verifying…"); try { await D.verifyOTP({ otpVerification: ver, verificationToken: $("#wdl-code").value.trim() }); await done(); } catch (err) { msg(err.message || String(err)); } };
-  const L = $("#wdl-wallets"); let ps = []; try { ps = D.getAvailableWalletProvidersData() || []; } catch {}
-  const seen = new Set(); ps = ps.filter((p) => !seen.has(p.key) && seen.add(p.key));
-  L.innerHTML = ps.length ? ps.slice(0, 8).map((p) => `<button class="wdl-btn ghost" data-k="${esc(p.key)}">${esc((p.metadata && p.metadata.displayName) || p.key)}</button>`).join("") : '<p class="wdl-fine">No browser wallet found. Email sign-in works everywhere.</p>';
-  L.querySelectorAll("[data-k]").forEach((b) => (b.onclick = async () => { msg("Check your wallet to connect and sign…"); try { await D.connectAndVerifyWithWalletProvider({ walletProviderKey: b.dataset.k }); await done(); } catch (err) { msg(err.message || String(err)); } }));
+  const done = async () => { msg("Signed in. Setting up your hall pass…"); await loadMe(); if (!ME) { msg(authMsg || "Couldn't finish sign-in."); return; } const back = sessionStorage.getItem("wd-after-login"); sessionStorage.removeItem("wd-after-login"); location.hash = ME.welcome == null ? "#/spin" : back && !/login|signup/.test(back) ? back : "#/account"; };
+  $("#wdl-email").onsubmit = async (e) => { e.preventDefault(); email = $("#wdl-em").value.trim(); msg("Sending code…"); try { ver = await D.sendEmailOTP({ email }); $("#wdl-to").textContent = email; document.querySelector('[data-step="email"]').hidden = true; document.querySelector('[data-step="otp"]').hidden = false; msg("Check your inbox (and spam)."); $("#wdl-code").focus(); } catch (err) { msg(nice(err)); } };
+  $("#wdl-otp").onsubmit = async (e) => { e.preventDefault(); msg("Checking…"); try { await D.verifyOTP({ otpVerification: ver, verificationToken: $("#wdl-code").value.trim() }); await done(); } catch (err) { msg(nice(err)); } };
+  $("#wdl-back").onclick = () => { document.querySelector('[data-step="email"]').hidden = false; document.querySelector('[data-step="otp"]').hidden = true; msg(""); };
+  /* Social buttons only for providers switched on in the sign-in dashboard. */
+  const ps = ((client && client.projectSettings && client.projectSettings.providers) || []).filter((p) => p && p.enabledAt && SOCIAL[p.provider]).map((p) => p.provider);
+  const S = $("#wdl-social"); S.innerHTML = [...new Set(ps)].map((p) => `<button class="wdl-btn ghost" data-soc="${p}">${SOCIAL[p]}</button>`).join("");
+  S.querySelectorAll("[data-soc]").forEach((b) => (b.onclick = async () => { msg("Opening " + b.textContent.replace("Continue with ", "") + "…"); try { if (!sessionStorage.getItem("wd-after-login")) sessionStorage.setItem("wd-after-login", "#/account"); await D.signInWithSocialRedirect({ provider: b.dataset.soc, redirectUrl: location.origin + "/" }); } catch (err) { msg(nice(err)); } }));
+  /* Low-key extra option: a sign-in browser extension, if one is installed. No brand names. */
+  let ws = []; try { ws = D.getAvailableWalletProvidersData() || []; } catch {}
+  const seen = new Set(); ws = ws.filter((p) => !seen.has(p.key) && seen.add(p.key));
+  if (ws.length) { $("#wdl-more").hidden = false; const L = $("#wdl-wallets");
+    L.innerHTML = ws.slice(0, 4).map((p, i) => `<button class="wdl-btn ghost" data-k="${esc(p.key)}">${ws.length > 1 ? "Browser extension " + (i + 1) : "Use my browser extension"}</button>`).join("") + `<p class="wdl-fine">For folks who already use a sign-in extension. Email works great for everyone else.</p>`;
+    L.querySelectorAll("[data-k]").forEach((b) => (b.onclick = async () => { msg("Approve the sign-in in your extension…"); try { await D.connectAndVerifyWithWalletProvider({ walletProviderKey: b.dataset.k }); await done(); } catch (err) { msg(nice(err)); } })); }
 }
+const shareUrl = (h) => location.origin + "/" + h;
+const bannerHtml = (p) => `<div class="wdl-cover wdl-banner" style="background:${coverCss(p.cover)}">${p.banner >= 0 ? bannerSvg(p.bnSeed || p.handle, p.banner) : ""}</div>`;
+function passShelf(p) { const set = p.passSet || {}; const ks = Object.keys(set); if (!ks.length) return ""; return `<div class="wdl-card"><h3>🎟️ Hall Pass collection · ${p.passes || 0}</h3><div class="wds-chips">${ks.map((k) => { const x = (Shop.HALL || []).find((y) => y.key === k); return x ? `<a class="wds-chip" href="#/drop/${k}" style="border-color:${x.color[0]}">${x.emoji} ${esc(x.name)}${set[k] > 1 ? " ×" + set[k] : ""}</a>` : ""; }).join("")}</div></div>`; }
+function qrCard(h, mine) { const u = shareUrl(h); return `<div class="wdl-card wdl-qr"><div>${qrSvg(u, 156)}</div><div><h3>${mine ? "Your share link" : "Share this profile"}</h3><p><b>${esc(u.replace(/^https?:\/\//, ""))}</b></p>${mine ? `<p>Friends who join with it get +500 pts. You get +1,000 per signup and climb the recruiters board. Joined so far: <b>${ME.refs || 0}</b>.</p>` : ""}<div class="wdl-row"><button class="wdl-btn" data-sharep="${esc(h)}">Share link</button><button class="wdl-btn ghost" data-copy="${esc(u)}">Copy</button>${mine ? `<a class="wdl-btn ghost" href="/api/wd?a=card&h=${esc(h)}&v=${esc(ME.avSeed)}${ME.hasAv}" target="_blank" rel="noopener">Share card</a>` : ""}</div></div></div>`; }
 function pAccount() {
-  if (!ME) return shell("My account", needLogin("your account"));
-  return shell("My account", `<div class="wdl-cover" style="background:${coverCss(ME.cover)}"></div><div class="wdl-card wdl-pro wdl-pro-top">${av(ME, 96)}<div><h3>${esc(ME.displayName || "@" + ME.handle)}</h3><p>@${esc(ME.handle)} · Member #${ME.member}</p>${vipFlair(ME)}<p><b>${ME.points.toLocaleString()}</b> hall points · <b>${money(ME.credit)}</b> gift credit</p>
-    <div class="wdl-row"><button class="wdl-btn ghost" data-reroll="avatar">🎲 New avatar</button><button class="wdl-btn ghost" data-reroll="handle">🎲 Random handle</button><button class="wdl-btn ghost" data-share>Share my link</button><a class="wdl-btn ghost" href="/api/wd?a=card&h=${esc(ME.handle)}&v=${esc(ME.avSeed)}${ME.hasAv}" target="_blank" rel="noopener">My share card</a><label class="wdl-btn ghost">📷 Upload photo<input type="file" accept="image/*" id="wdl-up" hidden></label><button class="wdl-btn ghost" data-logout>Log out</button></div></div></div>
-   <div class="wdl-card"><h3>Invite friends</h3><p>Your link: <b>${esc(location.host)}/${esc(ME.handle)}</b>. Friends get +500 pts, you get +1,000 pts per signup. Joined so far: <b>${ME.refs || 0}</b>.</p></div><form class="wdl-card wdl-form" id="wdl-prof"><h3>Edit profile</h3><div class="wdl-covers">${COVERS.map((c, i) => `<label style="background:${c}"><input type="radio" name="cover" value="${i}" ${String(ME.cover || 0) === String(i) ? "checked" : ""}><span></span></label>`).join("")}</div><label>Display name<input name="displayName" maxlength="32" value="${esc(ME.displayName)}"></label><label>City<input name="city" maxlength="40" value="${esc(ME.city)}"></label><label>Bio<textarea name="bio" maxlength="160">${esc(ME.bio)}</textarea></label><label>Handle<input name="handle" maxlength="20" value="${esc(ME.handle)}" pattern="[a-z0-9_]{3,20}"></label><button class="wdl-btn">Save</button></form>
-   <div class="wdl-grid3"><a class="wdl-card" href="#/spin"><h3>🎡 Welcome Spin</h3><p>${ME.welcome == null ? "Ready to spin" : "Won " + (+ME.welcome).toLocaleString() + " pts"}</p></a><a class="wdl-card" href="#/quests"><h3>✅ Daily quests</h3><p>Free points every day</p></a><a class="wdl-card" href="#/gifts/redeem"><h3>🎁 Redeem a code</h3><p>Add gift credit</p></a></div>`);
+  if (!ME) return shell("My profile", needLogin("your profile"));
+  return shell("My profile", `${bannerHtml(ME)}<div class="wdl-card wdl-pro wdl-pro-top">${av(ME, 96)}<div><h3>${esc(ME.displayName || "@" + ME.handle)}</h3><p>@${esc(ME.handle)} · Member ${padNo(ME.member)}</p>${vipFlair(ME)}<p><b>${ME.points.toLocaleString()}</b> hall points · <b>${money(ME.credit)}</b> gift credit${ME.passes ? ` · <b>${ME.passes}</b> hall passes` : ""}</p>
+    <div class="wdl-row"><button class="wdl-btn ghost" data-reroll="avatar">🎲 New pic</button><button class="wdl-btn ghost" data-reroll="banner">🎲 New banner</button><button class="wdl-btn ghost" data-reroll="handle">🎲 Random @</button><label class="wdl-btn ghost">📷 Upload photo<input type="file" accept="image/*" id="wdl-up" hidden></label><a class="wdl-btn ghost" href="#/u/${esc(ME.handle)}">View public profile</a><a class="wdl-btn ghost" href="#/orders">My orders</a><button class="wdl-btn ghost" data-logout>Log out</button></div></div></div>
+   ${qrCard(ME.handle, true)}${passShelf(ME)}
+   <form class="wdl-card wdl-form" id="wdl-prof"><h3>Edit profile</h3><p class="wdl-fine">Banner color (behind your generated banner)</p><div class="wdl-covers">${COVERS.map((c, i) => `<label style="background:${c}"><input type="radio" name="cover" value="${i}" ${String(ME.cover || 0) === String(i) ? "checked" : ""}><span></span></label>`).join("")}</div><label>Username<input name="handle" maxlength="20" value="${esc(ME.handle)}" pattern="[a-z0-9_]{3,20}" title="3–20 lowercase letters, numbers or _" autocapitalize="none" spellcheck="false"></label><label>Display name<input name="displayName" maxlength="32" value="${esc(ME.displayName)}"></label><label>City<input name="city" maxlength="40" value="${esc(ME.city)}"></label><label>Bio<textarea name="bio" maxlength="160">${esc(ME.bio)}</textarea></label><label class="wdl-check"><input type="checkbox" name="tickerOn" ${ME.tickerOff ? "" : "checked"}> Show my purchases &amp; entries in the live activity feed</label><button class="wdl-btn">Save</button></form>
+   <div class="wdl-grid3"><a class="wdl-card" href="#/spin"><h3>🎡 Welcome Spin</h3><p>${ME.welcome == null ? "Ready to spin" : "Won " + (+ME.welcome).toLocaleString() + " pts"}</p></a><a class="wdl-card" href="#/quests"><h3>✅ Quests</h3><p>Daily + milestone points</p></a><a class="wdl-card" href="#/leaderboard"><h3>🏆 Leaderboard</h3><p>Points &amp; top recruiters</p></a><a class="wdl-card" href="#/gifts/redeem"><h3>🎁 Redeem a code</h3><p>Add gift credit</p></a></div>`);
 }
 function pProfile(h) {
   h = h.toLowerCase().replace(/^@/, "");
   setTimeout(async () => { const box = $("#wdl-pub"); if (!box) return; try { const p = (await api("profile", undefined, "&h=" + encodeURIComponent(h))).profile;
-    box.innerHTML = `<div class="wdl-cover" style="background:${coverCss(p.cover)}"></div><div class="wdl-card wdl-pro wdl-pro-top">${av(p, 96)}<div><h3>${esc(p.displayName || "@" + p.handle)}</h3><p>@${esc(p.handle)} · Member #${p.member}${p.city ? " · " + esc(p.city) : ""}</p>${vipFlair(p)}<p>${esc(p.bio)}</p><p><b>${p.points.toLocaleString()}</b> hall points</p>${ME ? "" : `<a class="wdl-btn" href="#/login" data-ref="${esc(p.handle)}">Join with @${esc(p.handle)}\'s link</a>`}<button class="wdl-btn ghost" data-sharep="${esc(p.handle)}">Share</button></div></div>`; }
+    box.innerHTML = `${bannerHtml(p)}<div class="wdl-card wdl-pro wdl-pro-top">${av(p, 96)}<div><h3>${esc(p.displayName || "@" + p.handle)}</h3><p>@${esc(p.handle)} · Member ${padNo(p.member)}${p.city ? " · " + esc(p.city) : ""}</p>${vipFlair(p)}<p>${esc(p.bio)}</p><p><b>${p.points.toLocaleString()}</b> hall points · <b>${p.refs || 0}</b> recruits${p.passes ? ` · <b>${p.passes}</b> hall passes` : ""}</p>${ME ? "" : `<a class="wdl-btn" href="#/login" data-ref="${esc(p.handle)}">Join with @${esc(p.handle)}\'s link</a>`}</div></div>${passShelf(p)}${qrCard(p.handle, ME && ME.handle === p.handle)}`; bind("/u/" + h); }
     catch (e) { box.innerHTML = `<div class="wdl-card"><p>${e.status === 404 ? "No member with that handle." : esc(errText(e))}</p></div>`; } }, 0);
   return shell("@" + esc(h), `<div id="wdl-pub"><div class="wdl-card"><p>Loading…</p></div></div>`);
 }
@@ -130,14 +153,17 @@ function reveal(d) {
 }
 function confetti() { const c = document.createElement("div"); c.className = "wdl-confetti"; c.innerHTML = Array.from({ length: 40 }, (_, i) => `<i style="left:${Math.random() * 100}%;background:hsl(${i * 37} 85% 55%);animation-delay:${Math.random() * .4}s"></i>`).join(""); document.body.appendChild(c); setTimeout(() => c.remove(), 2200); }
 function pQuests() {
-  const qs = (SRV && SRV.quests) || [];
-  return shell("Daily quests", (ME ? "" : needLogin("claim quest points")) + `<div class="wdl-list">${qs.map((q) => `<div class="wdl-card wdl-q"><div><h3>${esc(q.title)}</h3><p>${esc(q.sub)}</p></div><div><b>+${q.reward} pts</b>${ME ? (DONE[q.id] ? `<span class="wdl-done">Done ✓</span>` : `<button class="wdl-btn" data-quest="${q.id}" data-href="${esc(q.href || "")}">${esc(q.cta)}</button>`) : ""}</div></div>`).join("")}</div><p class="wdl-fine">Quests reset daily (Arizona time). Points are free and have no cash value.</p>`);
+  const qs = (SRV && SRV.quests) || [], ms = (SRV && SRV.milestones) || [];
+  return shell("Quests", (ME ? "" : needLogin("claim quest points")) + `<h2 class="wdl-h2">Daily</h2><div class="wdl-list">${qs.map((q) => `<div class="wdl-card wdl-q"><div><h3>${esc(q.title)}</h3><p>${esc(q.sub)}</p></div><div><b>+${q.reward} pts</b>${ME ? (DONE[q.id] ? `<span class="wdl-done">Done ✓</span>` : `<button class="wdl-btn" data-quest="${q.id}" data-href="${esc(q.href || "")}">${esc(q.cta)}</button>`) : ""}</div></div>`).join("")}</div>
+  <h2 class="wdl-h2">Milestones · farm your link</h2><div class="wdl-list">${ms.map((q) => `<div class="wdl-card wdl-q"><div><h3>${esc(q.title)}</h3>${/ref/.test(q.id) && ME ? `<p>${Math.min(ME.refs || 0, +q.id.replace(/\D/g, ""))}/${q.id.replace(/\D/g, "")} recruited</p>` : ""}</div><div><b>+${q.reward.toLocaleString()} pts</b>${ME ? (MDONE[q.id] ? `<span class="wdl-done">Done ✓</span>` : `<button class="wdl-btn" data-mile="${q.id}">Claim</button> <a class="wdl-btn ghost" href="${esc(q.href)}">Go</a>`) : ""}</div></div>`).join("")}</div>
+  <p class="wdl-fine">Daily quests reset at midnight Arizona time. Milestones are one-time and checked on our server. Points are free, for fun, and have no cash value; purchases never earn points.</p>`);
 }
-function pBoard() {
-  setTimeout(async () => { const box = $("#wdl-lb"); if (!box) return; try { const d = await api("lb");
-    box.innerHTML = d.board.length ? `<table class="wdl-table"><tr><th>#</th><th>Member</th><th>Points</th></tr>${d.board.map((p, i) => `<tr><td>${i + 1}</td><td><a href="#/u/${esc(p.handle)}" class="wdl-who">${av(p, 28)} @${esc(p.handle)}${p.vip ? " ⭐" : ""}</a></td><td>${p.points.toLocaleString()}</td></tr>`).join("")}</table>` : "<p>No members yet. Be the first.</p>"; }
+function pBoard(by) {
+  by = by === "refs" ? "refs" : "points";
+  setTimeout(async () => { const box = $("#wdl-lb"); if (!box) return; try { const d = await api("lb", undefined, by === "refs" ? "&by=refs" : "");
+    box.innerHTML = d.board.length ? `<table class="wdl-table"><tr><th>#</th><th>Member</th><th>${by === "refs" ? "Recruits" : "Points"}</th></tr>${d.board.map((p, i) => `<tr class="${ME && ME.handle === p.handle ? "wdl-mine" : ""}"><td>${i + 1}</td><td><a href="#/u/${esc(p.handle)}" class="wdl-who">${av(p, 28)} @${esc(p.handle)} <small>${padNo(p.member)}</small>${p.vip ? " ⭐" : ""}</a></td><td>${(by === "refs" ? p.score : p.points).toLocaleString()}</td></tr>`).join("")}</table><p class="wdl-fine">${d.members.toLocaleString()} members so far.</p>` : "<p>No one here yet. Be the first.</p>"; }
     catch (e) { box.innerHTML = `<p>${esc(errText(e))}</p>`; } }, 0);
-  return shell("Leaderboard", `<div class="wdl-card" id="wdl-lb"><p>Loading…</p></div><p class="wdl-fine">Real members only. Points are free and for fun.</p>`);
+  return shell("Leaderboard", `<div class="wdl-row wdl-tabs"><a href="#/leaderboard" class="${by === "points" ? "on" : ""}">Points</a><a href="#/leaderboard?by=refs" class="${by === "refs" ? "on" : ""}">Top recruiters</a></div><div class="wdl-card" id="wdl-lb"><p>Loading…</p></div>${ME ? `<p><a class="wdl-btn" href="#/account">Get my share link + QR</a></p>` : ""}<p class="wdl-fine">Real members only. Points are free and for fun.</p>`);
 }
 function lockerCard(p) {
   const { L, p: partner } = partnerOf(p.slug);
@@ -161,7 +187,7 @@ function pGifts() {
    <div class="wdl-grid">${GIFTS.map(card).join("")}${W2["gift-custom"] ? `<div class="wdl-card wdl-gift"><div class="wdl-gc">WINE DETENTION<b>Any $</b></div>${buyBtn("gift-custom", "Choose amount")}</div>` : ""}</div>
    ${B.pct ? `<div class="wdl-card"><h3>${esc(B.label)}</h3><p>Every gift card includes a fixed ${B.pct}% bonus in promotional credit. No spin, no chance: you always get exactly ${B.pct}%.</p><p class="wdl-fine">${esc(B.fine)}</p></div>` : ""}
    <h2 class="wdl-h2">Pre-launch offers</h2><div class="wdl-grid">${cfg().OFFERS.map((o) => `<div class="wdl-card"><h3>${esc(o.name)}</h3><p class="wdl-tag">${esc(o.price)}</p><p>${esc(o.blurb)}</p>${buyBtn(o.key, "Get it")}</div>`).join("")}</div>
-   <p class="wdl-fine">Paid by card through Whop. Gift cards and credits are not alcohol and can't be exchanged for cash except where required by law. After purchase we email your code; redeem it under Redeem.</p>${LEGAL}`);
+   <p class="wdl-fine">Pay by card, Apple Pay, Google Pay, Cash App Pay or crypto at secure checkout. Gift cards and credits are not alcohol and can't be exchanged for cash except where required by law. Your codes appear right after payment (and in My orders); redeem one under Redeem or gift it.</p>${LEGAL}`);
 }
 function pRedeem() {
   return shell("Redeem a gift code", `<div class="wdl-row wdl-tabs"><a href="#/gifts">Shop</a><a href="#/gifts/redeem" class="on">Redeem</a></div>` + (ME ? `<form class="wdl-card wdl-notify" id="wdl-redeem"><input id="wdl-gcode" required placeholder="WD-XXXX-XXXX-XXXX" aria-label="Gift code"><button class="wdl-btn">Redeem</button></form><p>Your gift credit: <b>${money(ME.credit)}</b></p>` : needLogin("redeem a code")) + LEGAL);
@@ -178,11 +204,11 @@ function boxSvg(key) { const [a, b, bg] = DROP_C[key] || DROP_C.vip350, id = "g"
   <circle cx="100" cy="112" r="17" fill="#fff"/><text x="100" y="121" text-anchor="middle" font-size="24" font-weight="900" fill="${a}" font-family="Anton,sans-serif">?</text>
   <rect x="122" y="100" width="22" height="18" rx="4" fill="#fff" fill-opacity=".9"/><path d="M127 100v-5a6 6 0 0 1 12 0v5" fill="none" stroke="#fff" stroke-width="3"/></svg>`; }
 const dropFine = `<p class="wdl-fine wdl-dropfine">What's in it? Revealed after checkout. Same drop for everyone. Not alcohol. <a href="#/policy/terms">Terms &amp; drop details</a></p>`;
-function dropCard(t, opt = {}) { const url = cfg().WHOP[t.key];
+function dropCard(t, opt = {}) {
   return `<div class="wdl-drop" style="--a:${(DROP_C[t.key] || DROP_C.vip350)[0]};--b:${(DROP_C[t.key] || DROP_C.vip350)[1]};--bg:${(DROP_C[t.key] || DROP_C.vip350)[2]}">${t.popular ? `<span class="wdl-popular">★ Most popular</span>` : opt.badge ? `<span class="wdl-popular">${opt.badge}</span>` : ""}
   ${boxSvg(t.key)}<h3>${esc(t.name)}</h3><p class="wdl-hook">${esc(HOOK[t.key] || t.tagline || "")}</p>
   <div class="wdl-vip-price">${opt.list ? `<s>${money(opt.list)}</s> ` : ""}${money(t.price)}${opt.per ? `<small>${opt.per}</small>` : ""}</div>${opt.extra || ""}
-  ${url ? `<a class="wdl-btn wdl-claim" href="${esc(url)}" target="_blank" rel="noopener">Claim your drop</a>` : `<div class="wdl-notifywrap">${notifyForm("vip:" + t.key)}</div>`}${dropFine}</div>`; }
+  ${Shop.stockLine(t.key)}${Shop.ctl(t.key, "Add to bag")}<a class="wds-more" href="#/drop/${esc(t.key)}">Details &amp; comments →</a>${dropFine}</div>`; }
 function vipCard(t) { return dropCard(t); }
 const buyOr = (key, label) => cfg().WHOP[key] ? `<a class="wdl-btn" href="${esc(cfg().WHOP[key])}" target="_blank" rel="noopener">${esc(label)}</a>` : `<p class="wdl-fine"><b>Reserve your spot</b> — checkout opens soon.</p>${notifyForm("vip:" + key)}`;
 function flashEnd() { // next Sunday 11:59:59 PM Arizona (UTC-7, no DST); rolls forward weekly
@@ -199,28 +225,29 @@ function wall() { setTimeout(async () => { const e = $("#wdl-wall"); if (!e) ret
 function pHome() {
   const party = (W().partyHomeHTML && W().partyHomeHTML()) || `<a class="wdl-card" href="#/party"><h3>♪ Detention Radio</h3><p>Open the jukebox.</p></a>`;
   const gifts = `<h2 class="wdl-h2">🎁 VIP gift cards</h2><div class="wdl-grid">${GIFTS.map((a) => `<div class="wdl-card wdl-gift"><div class="wdl-gc">WINE DETENTION<b>${money(a)}</b></div>${cfg().BONUS.pct ? `<p class="wdl-tag">+ ${money(a * cfg().BONUS.pct / 100)} bonus credit</p>` : ""}${buyBtn("gift-" + a, "Buy " + money(a))}</div>`).join("")}</div><p class="wdl-fine"><a href="#/gifts">Shop all gift cards →</a></p>`;
-  return `<section class="wdl"><div class="wdl-homehero"><span class="wdl-tag">Whitelist · OG early access</span><h1>OG Founding VIP Drops</h1><p>Sealed mystery drops for the whales, whitelist and OGs who got here first. 🎁🎆</p>${ME ? "" : `<a class="wdl-btn ghost" href="#/login">Get on the whitelist</a>`}</div>
+  return `<section class="wdl">${Shop.tickerSlot()}<div class="wdl-homehero"><span class="wdl-tag">Founders · early access</span><h1>OG Founding VIP Drops</h1><p>Sealed mystery drops for the OGs who got here first. Limited runs, real countdowns. 🎁🎆</p>${ME ? "" : `<a class="wdl-btn ghost" href="#/login">Get your free hall pass</a>`} <a class="wdl-btn ghost" href="#/live">🔴 Live room</a></div>
   <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}
+  <div class="wds">${Shop.passesSection()}</div>
   <h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>
   ${gifts}
   <h2 class="wdl-h2">♪ Detention Radio</h2>${party}
   ${wall()}${LEGAL}</section>`;
 }
 function pVip() {
-  return shell("OG Founding VIP Drops", `<div class="wdl-vip-hero"><p>Sealed drops for the bad boys and bad girls who showed up first. 🎁🎆</p></div>
+  return shell("OG Founding VIP Drops", `<div class="wdl-vip-hero"><p>Sealed drops for the bad boys and bad girls who showed up first. Limited quantities, real counts. 🎁🎆</p></div>${Shop.tickerSlot()}
   <div class="wdl-drops wdl-drops-main">${cfg().VIP.map(vipCard).join("")}</div>${bundleCard()}<h2 class="wdl-h2">More drops</h2><div class="wdl-drops">${cfg().MORE.map(vipCard).join("")}</div>${wall()}${LEGAL}`);
 }
 export function vipHero() {
   const T = cfg().VIP; if (!T.length) return "";
   return `<a class="wdl-vip-banner" href="#/vip"><span class="wdl-tag">New · OG Founding VIP</span><b>🎁 The Founding Members: OG VIP Mystery Drop is here</b><span>Most popular: $350 Founding Members Mystery Drop · treat yourself to Let's Pop $888 · or go all in with The Private Reserve $1,750</span><span class="wdl-fine">Sealed mystery drops. Revealed after checkout. Same drop for everyone.</span><span class="wdl-btn">See the drops</span></a>`;
 }
-function pCart() { return shell("No cart, no wine sales here", `<div class="wdl-card"><p>Wine Detention doesn't sell alcohol directly. Shop lockers at licensed partners, or pick up a gift card.</p><a class="wdl-btn" href="#/collections">Partner offers</a> <a class="wdl-btn ghost" href="#/gifts">Gift cards</a></div>${LEGAL}`); }
+
 function pSoon(name) { return shell(name, `<div class="wdl-card"><h3>Opening after launch</h3><p>Live rooms, parties, trades and giveaways open once the hall has real members. Get notified first.</p>${notifyForm("community")}</div>`); }
 function dropTerms() { const all = [...cfg().VIP, cfg().BUNDLE, ...cfg().MORE].filter(Boolean);
   return `<h3 id="drops">OG Founding VIP drop contents</h3><p>Every drop has fixed contents, identical for every buyer. Nothing is random. Contents are Wine Detention gift credit plus profile perks; no alcohol is included. Gift credit is not cash.</p><ul>${all.map((t) => `<li><b>${esc(t.name)}</b> (${money(t.price)}): ${money(t.credit || t.price * (1 + vipPct() / 100))} gift credit; ${esc((t.perks || []).join(", "))}.</li>`).join("")}</ul><p>Bonus portion of credit is promotional and may expire 12 months after issue; paid value never expires.</p>`; }
 function pPolicy(k) {
-  const T = k === "privacy" ? ["Privacy Policy", `<p><b>Placeholder — to be finalized before launch.</b></p><p>We collect your email or wallet address (via Dynamic), your profile details, waitlist emails, and referral handles. We use them to run your account, points and gift credit and to tell you about launches. Card payments are processed by Whop; we never see your card number. Wine purchases happen on licensed partner sites under their own privacy policies; partner links include your public @handle as a referral tag. Email hello@winedetention.com to access or delete your data.</p>`] :
-    ["Terms of Service", `<p><b>Placeholder — to be finalized before launch.</b></p><p>You must be 21 or older. Wine Detention does not sell, ship or deliver alcohol. Wine purchases are fulfilled by licensed partners, who are the sellers of record and handle age verification and shipping to permitted states. Gift cards, pre-launch credits and memberships are sold via Whop and contain no alcohol. Gift card bonus credit is promotional, not cash, and may expire 12 months after issue; paid gift card value does not expire. Hall points are free, for fun and have no cash value. Welcome Spin odds are published on the spin page.</p>${dropTerms()}`];
+  const T = k === "privacy" ? ["Privacy Policy", `<p><b>Placeholder — to be finalized before launch.</b></p><p>We collect your email (or the sign-in account you choose), your profile details, chat messages and comments, orders, waitlist emails, and referral handles. Sign-in is handled by our authentication provider. We use them to run your account, points and gift credit and to tell you about launches. Payments are processed by Whop (cards, Apple Pay, Google Pay, Cash App Pay, crypto); we never see your card number. You can hide your activity from the public live feed in your profile. Wine purchases happen on licensed partner sites under their own privacy policies; partner links include your public @handle as a referral tag. Email hello@winedetention.com to access or delete your data.</p>`] :
+    ["Terms of Service", `<p><b>Placeholder — to be finalized before launch.</b></p><p>You must be 21 or older. Wine Detention does not sell, ship or deliver alcohol. Wine purchases are fulfilled by licensed partners, who are the sellers of record and handle age verification and shipping to permitted states. Hall Passes, VIP drops, gift cards and pre-launch credits are sold via Whop and contain no alcohol. Hall Passes return 100% of the price as Wine Detention gift credit plus a collectible profile pass. Quantities are limited; "claimed" counts reflect paid orders. Chat and comments: be 21+, be kind, no links or spam; we may remove messages or mute accounts. Gift card bonus credit is promotional, not cash, and may expire 12 months after issue; paid gift card value does not expire. Hall points are free, for fun and have no cash value. Welcome Spin odds are published on the spin page.</p>${dropTerms()}`];
   return shell(T[0], `<div class="wdl-card wdl-prose">${T[1]}</div>${LEGAL}`);
 }
 
@@ -247,7 +274,14 @@ export function page(route) {
   if (route.startsWith("/u/")) return pProfile(route.slice(3));
   if (route === "/spin") return pSpin();
   if (route === "/quests") return pQuests();
-  if (route === "/leaderboard") return pBoard();
+  if (route === "/leaderboard") return pBoard(new URLSearchParams(location.hash.split("?")[1] || "").get("by"));
+  if (route === "/shop" || route === "/hall-passes") return Shop.pShop();
+  if (route.startsWith("/drop/")) return Shop.pDrop(route.slice(6));
+  if (route === "/orders") return Shop.pOrders();
+  if (route === "/live") return Shop.pLive();
+  if (route === "/cart") return Shop.pCart();
+  if (route === "/checkout") return Shop.pCheckout();
+  if (route === "/confirmation") return Shop.pConfirm();
   if (route === "/how-it-works") { setTimeout(() => location.replace("#/vip"), 0); return pVip(); }
   if (route === "/socials") return shell("Follow @winedetention", `<div class="wdl-card"><div class="wd-soc">${(window.WD_SOCIALS || []).map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener me" title="${esc(x.n)}" style="--c:${x.c}"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="${x.p}"/></svg></a>`).join("")}</div></div>`);
   if (route === "/collections" || route === "/partners" || route.startsWith("/product/")) { setTimeout(() => location.replace("#/vip"), 0); return pVip(); }
@@ -255,22 +289,23 @@ export function page(route) {
   if (route === "/vip") return pVip();
   if (route === "/giveaway" || route === "/giveaways") return pGiveaway();
   if (route.startsWith("/gifts")) return pGifts();
-  if (/^\/(cart|checkout|confirmation)$/.test(route)) return pCart();
   if (route.startsWith("/policy/")) return pPolicy(route.slice(8));
-  return pSoon({ "/live": "Live rooms", "/party": "Party", "/trade": "Trades" }[route] || "Coming soon");
+  return pSoon({ "/trade": "Trades" }[route] || "Coming soon");
 }
 export const owns = (route) => route === "/" || OWN.test(route);
 export function bind(route) {
   document.querySelectorAll(".wdl-notify[data-item]").forEach((f) => (f.onsubmit = async (e) => { e.preventDefault(); const i = f.querySelector("input"); try { await api("notify", { email: i.value, item: f.dataset.item }); f.innerHTML = "<p>You're on the list ✓</p>"; } catch (er) { toast(errText(er)); } }));
   document.querySelectorAll("[data-notify]").forEach((b) => (b.onclick = () => { b.outerHTML = notifyForm(b.dataset.notify); bind(route); }));
   document.querySelectorAll("[data-logout]").forEach((b) => (b.onclick = logout));
+  document.querySelectorAll("[data-mile]").forEach((b) => (b.onclick = async () => { try { const d = await api("milestone", { id: b.dataset.mile }); MDONE[b.dataset.mile] = 1; ME.points = d.points; toast("+" + d.reward.toLocaleString() + " pts"); confetti(); rerender(); } catch (e) { toast(errText(e)); } }));
+  Shop.bind(route);
   document.querySelectorAll("[data-ref]").forEach((b) => (b.onclick = () => localStorage.setItem("wd-ref", b.dataset.ref)));
   document.querySelectorAll("[data-share]").forEach((b) => (b.onclick = () => { const u = location.origin + "/" + ME.handle; navigator.share ? navigator.share({ title: "@" + ME.handle + " on Wine Detention", url: u }).catch(() => {}) : navigator.clipboard.writeText(u).then(() => toast("Link copied: " + u)); }));
   document.querySelectorAll("[data-reroll]").forEach((b) => (b.onclick = async () => { try { ME = (await api("reroll", { what: b.dataset.reroll })).me; rerender(); W().paintAuth && W().paintAuth(); } catch (e) { toast(errText(e)); } }));
   document.querySelectorAll("[data-quest]").forEach((b) => (b.onclick = async () => { try { const d = await api("quest", { id: b.dataset.quest }); DONE[b.dataset.quest] = 1; ME.points = d.points; toast("+" + d.reward + " pts"); if (b.dataset.quest === "share" && ME) { const u = location.origin + "/" + ME.handle; navigator.share ? navigator.share({ url: u }).catch(() => {}) : navigator.clipboard && navigator.clipboard.writeText(u); } if (b.dataset.href) location.hash = b.dataset.href; else rerender(); } catch (e) { toast(errText(e)); } }));
   const up = $("#wdl-up"); if (up) up.onchange = async () => { const f = up.files[0]; if (!f) return; try { const d = await resizeImg(f); ME = (await api("avatar", { dataUrl: d })).me; toast("Photo updated"); rerender(); W().paintAuth && W().paintAuth(); } catch (e) { toast(errText(e)); } };
   document.querySelectorAll("[data-sharep]").forEach((b) => (b.onclick = () => { const u = location.origin + "/" + b.dataset.sharep; navigator.share ? navigator.share({ url: u }).catch(() => {}) : navigator.clipboard.writeText(u).then(() => toast("Link copied")); }));
-  const pf = $("#wdl-prof"); if (pf) pf.onsubmit = async (e) => { e.preventDefault(); const f = new FormData(pf); try { ME = (await api("profile", { displayName: f.get("displayName"), bio: f.get("bio"), city: f.get("city"), cover: f.get("cover") || "0" })).me; const nh = String(f.get("handle") || "").toLowerCase(); if (nh && nh !== ME.handle) ME = (await api("reroll", { handle: nh })).me; toast("Saved"); rerender(); } catch (er) { toast(errText(er)); } };
+  const pf = $("#wdl-prof"); if (pf) pf.onsubmit = async (e) => { e.preventDefault(); const f = new FormData(pf); try { ME = (await api("profile", { displayName: f.get("displayName"), bio: f.get("bio"), city: f.get("city"), cover: f.get("cover") || "0", tickerOff: !f.get("tickerOn") })).me; const nh = String(f.get("handle") || "").toLowerCase(); if (nh && nh !== ME.handle) ME = (await api("reroll", { handle: nh })).me; toast("Saved"); rerender(); } catch (er) { toast(errText(er)); } };
   const rd = $("#wdl-redeem"); if (rd) rd.onsubmit = async (e) => { e.preventDefault(); try { const d = await api("redeem", { code: $("#wdl-gcode").value }); ME.credit = d.credit; if (d.tier) { ME.vip = d.tier; ME.vipNo = d.vipNo; } rerender(); reveal(d); } catch (er) { toast(errText(er)); } };
   if (route === "/login" || route === "/signup") bindLogin();
   if (route === "/spin") bindSpin();
@@ -280,13 +315,14 @@ export function authBtn() {
   if (ME) return `<a href="#/account" class="account-link wdl-acct" title="@${esc(ME.handle)}">${av(ME, 34)}</a>`;
   return `<a href="#/login" class="login-link">${authState === "soon" ? "Join list" : "Log in"}</a>`;
 }
-window.WDL = { page, owns, bind, authBtn, avatar, vipHero };
+window.WDL = { page, owns, bind, authBtn, avatar, vipHero, bagCount: () => Shop.count(), openBag: () => Shop.openBag() };
 /* /handle and /u/handle deep links -> SPA profile; ?ref= captures referrals */
 const qref = new URLSearchParams(location.search).get("ref"); if (qref) localStorage.setItem("wd-ref", qref.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20));
 const pathOnly = (location.pathname.replace(/\/$/, "") || "/").toLowerCase();
-if (!location.hash && /^\/(giveaway|giveaways|vip|gifts|quests|leaderboard|login|signup|party|live|spin|account|how-it-works|socials)$/.test(pathOnly)) {
+if (!location.hash && /^\/(giveaway|giveaways|vip|gifts|quests|leaderboard|login|signup|party|live|spin|account|how-it-works|socials|shop|hall-passes|cart|checkout|orders|confirmation)$/.test(pathOnly)) {
   history.replaceState(null, "", "/#" + (pathOnly === "/giveaways" ? "/giveaway" : pathOnly));
 }
+const dm = location.pathname.match(/^\/drop\/([a-z0-9]+)\/?$/i); if (dm && !location.hash) history.replaceState(null, "", "/#/drop/" + dm[1]);
 const pm = location.pathname.match(/^\/(?:u\/)?@?([a-z0-9_]{3,20})\/?$/i);
 if (pm && !location.hash) { localStorage.setItem("wd-ref", pm[1].toLowerCase()); history.replaceState(null, "", "/#/u/" + pm[1].toLowerCase()); }
 rerender(); W().paintAuth && W().paintAuth();

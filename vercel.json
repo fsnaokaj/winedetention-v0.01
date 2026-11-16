@@ -54,11 +54,39 @@
       "destination": "/index.html"
     },
     {
-      "source": "/u/:h",
+      "source": "/shop",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hall-passes",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cart",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/confirmation",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/orders",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/drop/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/u/:h([A-Za-z0-9_@]{3,21})",
       "destination": "/api/wd?a=page&h=:h"
     },
     {
-      "source": "/:h",
+      "source": "/:h([A-Za-z0-9_@]{3,21})",
       "destination": "/api/wd?a=page&h=:h"
     }
   ],
@@ -74,6 +102,15 @@
     },
     {
       "source": "/admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",
