@@ -9,8 +9,16 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="shortcut icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#0E3386">
 <link rel="manifest" href="/site.webmanifest">
+<meta name="msapplication-TileColor" content="#0E3386">
+<meta name="msapplication-config" content="/browserconfig.xml">
+<meta name="apple-mobile-web-app-title" content="Wine Detention">
+<meta name="application-name" content="Wine Detention">
+<meta name="color-scheme" content="light">
+<style>.wd-logo{display:flex;align-items:center;gap:8px;flex:none;text-decoration:none;margin-right:6px;-webkit-tap-highlight-color:transparent}.wd-logo-mark{width:38px;height:38px;flex:none;transition:transform .25s}.wd-logo:hover .wd-logo-mark{transform:rotate(-8deg) scale(1.05)}.wd-logo-type{display:flex;flex-direction:column;line-height:.92;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.02em}.wd-logo-type b:first-child{color:#CC3433;font-size:13px}.wd-logo-type b:last-child{color:#0E3386;font-size:15px}@media(max-width:380px){.wd-logo-type{display:none}}vercel-live-feedback,#vercel-live-feedback,[data-vercel-toolbar]{display:none!important;visibility:hidden!important;pointer-events:none!important}</style>
 <meta name="description" content="Wine Detention: gift cards, pre-launch offers and partner wine lockers. Wine purchases are fulfilled by licensed partners. Must be 21+.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Wine Detention">
@@ -76,7 +84,7 @@
     --why-bg:#F6F7F8;
     --why-text:#161823;
     --why-muted:#73747B;
-    --gate-overlay:rgba(22,24,35,0.45);
+    --gate-overlay:rgba(14,51,134,0.16);
     --header-border:#F1F1F2;
     --hero-sub:#5C6370;
     --surface:#FFFFFF;
@@ -102,7 +110,7 @@
     --why-bg:#0A2768;
     --why-text:#FFFFFF;
     --why-muted:#D6E4FF;
-    --gate-overlay:rgba(22,24,35,0.4);
+    --gate-overlay:rgba(14,51,134,0.16);
     --header-border:rgba(255,255,255,0.22);
     --hero-sub:#D6E4FF;
     --surface:#0E3386;
@@ -1745,6 +1753,7 @@
     <button class="rail-burger" id="rail-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="rail-drawer">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
+    <a class="wd-logo" href="#/" aria-label="Wine Detention home"><svg class="wd-logo-mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#0E3386"/><path d="M19 13h26c1.3 13-4.4 23.4-13 25.6C23.4 36.4 17.7 26 19 13z" fill="#fff"/><path d="M20.6 22h22.8c-1.2 8.4-5.4 14-11.4 15.4C26 36 21.8 30.4 20.6 22z" fill="#CC3433"/><circle cx="28" cy="27" r="1.8" fill="#fff"/><circle cx="36" cy="27" r="1.8" fill="#fff"/><path d="M28.5 31.5q3.5 3 7 0" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/><rect x="30.6" y="38" width="2.8" height="10" fill="#fff"/><rect x="23" y="47.5" width="18" height="4" rx="2" fill="#fff"/><circle cx="49" cy="15" r="8" fill="#CC3433" stroke="#fff" stroke-width="2.5"/><rect x="47.8" y="10.4" width="2.4" height="6" rx="1.2" fill="#fff"/><circle cx="49" cy="19.3" r="1.4" fill="#fff"/></svg><span class="wd-logo-type"><b>Wine</b><b>Detention</b></span></a>
     <form class="ue-search" id="ue-search" role="search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 015.9 12.1l3.8 3.8-1.4 1.4-3.8-3.8A7.5 7.5 0 1110.5 3zm0 2a5.5 5.5 0 100 11 5.5 5.5 0 000-11z"/></svg>
       <label class="visually-hidden" for="ue-q">Search lockers</label>
@@ -3373,27 +3382,9 @@
       '</svg>';
   }
   function brandMarkSVG(){
-    return '<svg class="brand-mark" viewBox="0 0 72 72" aria-hidden="true">'+
-      '<circle cx="36" cy="36" r="36" fill="#CC3433"/>'+
-      '<circle cx="36" cy="36" r="30" fill="#0E3386"/>'+
-      '<circle cx="36" cy="36" r="24" fill="#FFFFFF"/>'+
-      '<path d="M22 26h12v2h2.5c2 0 3.5 1.6 3.5 3.6v2.2c0 4.4-3.2 7.4-7.2 8.4v3.2h4.2v2.4H19.8v-2.4h4.2v-3.2c-4-1-7.2-4-7.2-8.4v-2.2c0-2 1.5-3.6 3.5-3.6H22V26z" fill="#0E3386"/>'+
-      '<path d="M19.2 28.2h-4.2v4.4c0 2.6 1.8 4.4 4.2 4.8" fill="none" stroke="#CC3433" stroke-width="2"/>'+
-      '<path d="M36.8 28.2h4.2v4.4c0 2.6-1.8 4.4-4.2 4.8" fill="none" stroke="#CC3433" stroke-width="2"/>'+
-      '<rect x="21.5" y="48" width="13" height="3.2" rx="0.6" fill="#CC3433"/>'+
-      '<g class="spray" transform="translate(42 16) rotate(16)">'+
-        '<circle cx="7" cy="-1" r="1.6" fill="#CC3433"/>'+
-        '<circle cx="11" cy="1" r="1.2" fill="#0E3386"/>'+
-        '<circle cx="4" cy="-4" r="1.1" fill="#CC3433"/>'+
-      '</g>'+
-      '<g transform="translate(42 16) rotate(16)">'+
-        '<rect class="cork" x="5" y="1" width="6" height="4.5" rx="1" fill="#CC3433"/>'+
-        '<rect x="5.6" y="5.4" width="4.8" height="7" fill="#0E3386"/>'+
-        '<rect x="4.6" y="11.8" width="6.8" height="3.4" fill="#CC3433"/>'+
-        '<path d="M4.2 15.2h7.6l2 10.6v18.4H2.2V25.8z" fill="#0E3386"/>'+
-        '<rect x="5.4" y="28" width="5.2" height="8" fill="#FFFFFF"/>'+
-      '</g></svg>';
+    return '<svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#0E3386"/><path d="M19 13h26c1.3 13-4.4 23.4-13 25.6C23.4 36.4 17.7 26 19 13z" fill="#fff"/><path d="M20.6 22h22.8c-1.2 8.4-5.4 14-11.4 15.4C26 36 21.8 30.4 20.6 22z" fill="#CC3433"/><circle cx="28" cy="27" r="1.8" fill="#fff"/><circle cx="36" cy="27" r="1.8" fill="#fff"/><path d="M28.5 31.5q3.5 3 7 0" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/><rect x="30.6" y="38" width="2.8" height="10" fill="#fff"/><rect x="23" y="47.5" width="18" height="4" rx="2" fill="#fff"/><circle cx="49" cy="15" r="8" fill="#CC3433" stroke="#fff" stroke-width="2.5"/><rect x="47.8" y="10.4" width="2.4" height="6" rx="1.2" fill="#fff"/><circle cx="49" cy="19.3" r="1.4" fill="#fff"/></svg>';
   }
+
   function bottleIconSVG(){
     return '<svg viewBox="0 0 34 60" class="bottle-icon" aria-hidden="true">'+
       '<rect x="13" y="0" width="8" height="12" fill="#0E3386"/>'+
@@ -3764,6 +3755,10 @@
       {href:"#/live", match:"/live", kind:"live", label:t("navLive")},
       {href:"#/vip", match:"/vip", kind:"pass", label:"OG VIP"},
       {href:"#/giveaway", match:"/giveaway", kind:"gift", label:"Giveaway"},
+      {href:"#/jukebox", match:"/jukebox", kind:"party", label:"Jukebox"},
+      {href:"#/club", match:"/club", kind:"pass", label:"Champagne Club 🥂"},
+      {href:"#/pearls", match:"/pearls", kind:"gift", label:"Pearls 🦪"},
+      {href:"#/spin", match:"/spin", kind:"gift", label:"Welcome game 🎁"},
       {href:"#/leaderboard", match:"/leaderboard", kind:"board", label:"Board"},
       {href:"#/account", match:"/account", kind:"you", label:"You"}
     ];
@@ -4004,6 +3999,10 @@
           '<li><a href="#/">'+t("navHome")+'</a></li>'+
           '<li><a href="#/live">'+t("navLive")+'</a></li>'+
           '<li><a href="#/party">Party</a></li>'+
+          '<li><a href="#/jukebox">Jukebox</a></li>'+
+          '<li><a href="#/club">Champagne Club</a></li>'+
+          '<li><a href="#/pearls">Pearls</a></li>'+
+          '<li><a href="#/spin">Welcome game</a></li>'+
           '<li><a href="#/trade">'+t("navTrade")+'</a></li>'+
           '<li><a href="#/about">'+t("footAbout")+'</a></li>'+
           '<li><a href="#/contact">'+t("footContact")+'</a></li>'+
@@ -4034,33 +4033,25 @@
   }
 
   function renderGate(){
+    /* Friendly one-tap 21+ moment. Remembered on this device (and on the account once signed in). Never a DOB form up front. */
     var card = document.getElementById("gate-card");
-    card.setAttribute("data-pass", t("gatePass"));
     if (gateRejected){
-      card.innerHTML = '<h2 style="font-size:30px;">'+t("gateRejectH")+'</h2><p>'+t("gateRejectP")+'</p>';
+      card.innerHTML = '<div class="gate-emoji">🎂</div><h2>Come back on your 21st!</h2><p>Wine Detention is a 21+ hangout. We\'ll save you a seat.</p><button class="gate-no" id="gate-undo" type="button">Oops, I tapped wrong</button>';
+      var u = document.getElementById("gate-undo"); if (u) u.onclick = function(){ gateRejected = false; renderGate(); };
       return;
     }
     card.innerHTML =
-      '<h2>'+t("gateH")+'</h2>'+
-      '<p>'+t("gateP")+'</p>'+
-      '<form id="gate-dob" class="gate-dob"><label>Date of birth<input type="date" id="gate-date" required max="'+new Date().toISOString().slice(0,10)+'"></label>'+
-      '<button class="btn btn-primary btn-block" type="submit">'+t("gateYes")+'</button></form>'+
-      '<button class="btn btn-ghost btn-block" id="gate-no">'+t("gateNo")+'</button>'+
-      '<p class="gate-legal">Wine purchases are fulfilled by licensed partners. Must be 21+. Please enjoy responsibly.</p>';
-    document.getElementById("gate-dob").addEventListener("submit", function(e){
-      e.preventDefault();
-      var v = document.getElementById("gate-date").value; if (!v) return;
-      var d = new Date(v+"T00:00:00"), n = new Date();
-      var age = n.getFullYear()-d.getFullYear() - ((n.getMonth()<d.getMonth() || (n.getMonth()===d.getMonth() && n.getDate()<d.getDate()))?1:0);
-      if (age < 21 || age > 120){ gateRejected = true; renderGate(); return; }
-      gateShown = true;
-      persist();
-      document.getElementById("age-gate").classList.add("hidden");
-    });
-    document.getElementById("gate-no").addEventListener("click", function(){
-      gateRejected = true;
-      renderGate();
-    });
+      '<div class="gate-emoji" aria-hidden="true">🍷🎟️</div>'+
+      '<h2>Quick vibe check</h2>'+
+      '<p>Wine Detention is a 21+ hangout. One tap and you\'re in. We\'ll remember this device.</p>'+
+      '<button class="btn btn-primary btn-block gate-yes" id="gate-yes" type="button">I\'m 21+ · let me in 🎉</button>'+
+      '<button class="btn btn-ghost btn-block" id="gate-signin" type="button">I\'m 21+ · sign in / claim my @</button>'+
+      '<button class="gate-no" id="gate-no" type="button">Not 21 yet</button>'+
+      '<p class="gate-legal">Nothing on this site is alcohol. Wine is sold only by licensed partners.</p>';
+    function pass(){ gateShown = true; persist(); try { document.cookie = "wd21=1; max-age=31536000; path=/; samesite=lax"; } catch(e){} var g = document.getElementById("age-gate"); g.classList.add("gate-out"); setTimeout(function(){ g.classList.add("hidden"); g.classList.remove("gate-out"); }, 220); }
+    document.getElementById("gate-yes").onclick = pass;
+    document.getElementById("gate-signin").onclick = function(){ pass(); if (window.WDL && window.WDL.openAuth) window.WDL.openAuth(); else location.hash = "#/login"; };
+    document.getElementById("gate-no").onclick = function(){ gateRejected = true; renderGate(); };
   }
 
   function routeQuery(){
@@ -5267,7 +5258,7 @@
       var qd = JSON.parse(localStorage.getItem("wd-quests")||"{}");
       if (qd && typeof qd==="object") questsDone = qd;
       farmCount = parseInt(localStorage.getItem("wd-farm")||"0",10)||0;
-      if (localStorage.getItem("wd-gate")==="1") gateShown = true;
+      if (localStorage.getItem("wd-gate")==="1" || /(?:^|; )wd21=1/.test(document.cookie)) { gateShown = true; localStorage.setItem("wd-gate","1"); }
       if (localStorage.getItem("wd-nowbar")==="0") nowbarOn = false;
       /* purge the old demo password store (base64 "passwords") from this device */
       localStorage.removeItem("wd-session"); localStorage.removeItem("wd-users");
@@ -5335,12 +5326,13 @@
     addPoints(0, "scroll");
   }, {passive:true});
 
-  window.WD = {render:render, navigate:navigate, toast:showToast, PRODUCTS:PRODUCTS, paintAuth:renderAuthBtn, partyHomeHTML:function(){ return partyPlaylistHTML({ compact: true }); }, bindParty:bindParty};
+  window.WD = {passGate:function(){ if (!gateShown){ gateShown = true; persist(); } var g = document.getElementById("age-gate"); if (g) g.classList.add("hidden"); }, render:render, navigate:navigate, toast:showToast, PRODUCTS:PRODUCTS, paintAuth:renderAuthBtn, partyHomeHTML:function(){ return partyPlaylistHTML({ compact: true }); }, bindParty:bindParty};
   loadPrefs();
   applyPrefs();
   var ticker = document.getElementById("ticker-track");
   if (ticker) ticker.innerHTML = tickerHTML();
-  if (gateShown) document.getElementById("age-gate").classList.add("hidden");
+  if (gateShown || /^#\/(login|signup)/.test(location.hash)) document.getElementById("age-gate").classList.add("hidden");
+  else { var ag = document.getElementById("age-gate"); ag.classList.add("hidden"); setTimeout(function(){ if (!gateShown && !document.querySelector("#wdm.on")) { ag.classList.remove("hidden"); ag.classList.add("gate-in"); } }, 700); }
   render();
   updateLiveChrome();
   setInterval(updateLiveChrome, 1000);

@@ -88,6 +88,18 @@
     {
       "source": "/:h([A-Za-z0-9_@]{3,21})",
       "destination": "/api/wd?a=page&h=:h"
+    },
+    {
+      "source": "/jukebox",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/club",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pearls",
+      "destination": "/index.html"
     }
   ],
   "headers": [
