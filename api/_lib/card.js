@@ -12,7 +12,7 @@ export function glassSvg(seed) {
 export function cardSvg(c) {
   const handle = "@" + c.handle, hs = Math.min(84, Math.floor(620 / (handle.length * 0.58)));
   const av = c.avatar || "data:image/svg+xml;base64," + Buffer.from(glassSvg(c.avSeed || c.handle)).toString("base64");
-  const num = `Member #${Number(c.member || 0).toLocaleString("en-US")}`, vip = c.vipName ? `OG Founding VIP #${c.vipNo}` : "";
+  const num = `Member #${String(Number(c.member || 0)).padStart(4, "0")}`, vip = c.vipName ? `OG Founding VIP #${c.vipNo}` : "";
   const link = `${c.host}/${c.handle}`, ls = Math.min(32, Math.floor(600 / (link.length * 0.56)));
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><defs>
 <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#F3F6FF"/><stop offset="1" stop-color="#FFF1E6"/></linearGradient>
